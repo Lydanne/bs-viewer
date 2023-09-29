@@ -1,5 +1,5 @@
 "use client";
-import { Col, Image, Row, Spin, Empty } from "@douyinfe/semi-ui";
+import { Col, Image, Row, Spin, Empty, Badge, Toast } from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
   IllustrationNoContentDark,
@@ -9,6 +9,7 @@ import styles from "./index.module.css";
 import React, { useEffect, useState } from "react";
 import type { IOpenAttachment } from "@lark-base-open/js-sdk";
 import dynamic from "next/dynamic";
+import { IconEyeClosedSolid } from "@douyinfe/semi-icons";
 
 const FilerobotImageEditor = dynamic(
   () => import("react-filerobot-image-editor"),
@@ -134,7 +135,7 @@ export default function App() {
       ) : current === -1 ? (
         <div className={styles["block-image"]}>
           {selected?.selectImages?.map((img, index) => {
-            return (
+            return img.val.type.includes("image") ? (
               <div className={styles["image-item"]} key={img.url}>
                 <img
                   className={styles["image"]}
@@ -143,6 +144,18 @@ export default function App() {
                   style={{ width: "100%", height: "100%" }}
                   onClick={() => openImgEditor(index)}
                 />
+                <div className={styles["title"]}>{img.val.name}</div>
+              </div>
+            ) : (
+              <div className={styles["image-item"]} key={img.url}>
+                <div
+                  className={styles["image"]}
+                  style={{ background: "#eee" }}
+                  onClick={() => Toast.warning({ content: `展不支持该类型` })}
+                >
+                  <IconEyeClosedSolid size="large" />
+                </div>
+                <div className={styles["title"]}>{img.val.name}</div>
               </div>
             );
           })}

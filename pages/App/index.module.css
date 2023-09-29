@@ -30,4 +30,21 @@
   height: 100%;
   object-fit: cover; /* 根据需要调整图像的适应方式 */
   vertical-align: bottom;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-item .title {
+  position: absolute;
+  /* top: 0; */
+  left: 0;
+  bottom: 0;
+  width: var(--scale);
+  text-align: center;
+  background-color: #00000079;
+  color: #fff;
+  padding: 5px 3px;
+  font-weight: bold;
+  font-size: 10px;
 }
