@@ -65,6 +65,7 @@ export default function App() {
     } catch (error) {
       console.error(error);
     }
+    setLoading(false);
   }, []);
 
   const init = useCallback(async () => {
