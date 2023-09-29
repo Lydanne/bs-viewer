@@ -248,7 +248,7 @@ export default function App() {
 const FilerobotImageEditorLang_zh = {
   name: "名称",
   save: "保存",
-  saveAs: "另存为",
+  saveAs: "保存",
   back: "返回",
   loading: "正在加载...",
   resetOperations: "重置/删除所有操作",
@@ -334,7 +334,7 @@ const FilerobotImageEditorLang_zh = {
   opacity: "不透明度",
   position: "位置",
   stroke: "描边",
-  saveAsModalLabel: "另存为图片",
+  saveAsModalLabel: "保存为图片",
   extension: "扩展名",
   nameIsRequired: "名称不能为空。",
   quality: "质量",
