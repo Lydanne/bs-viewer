@@ -1,23 +1,33 @@
-## Nextjs-Template [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/connectai-e/awesome-basescript)
+## Base Viewer
 
-> Nextjs 模版
+> 一个可以编辑图片的多维表格插件。
 
-![image](https://github.com/ConnectAI-E/BaseScript-Nextjs-Template/assets/110169811/15b53f4c-32c5-4bbf-a8a1-eca75bc3f3be)
+![image-20230929231202001](README.assets/image-20230929231202001.png)
+
+![image-20230929231227434](README.assets/image-20230929231227434.png)
+
+![image-20230929231804370](README.assets/image-20230929231804370.png)
+
+![image-20230929231826517](README.assets/image-20230929231826517.png)
+
+![image-20230929231853080](README.assets/image-20230929231853080.png)
 
 ### Feature
 
-- Jest 测试
-- semi UI
-- 多维表格插件 SDK
+- 图片编辑
+- 图片裁剪
+- 图片标记
+- 图片颜色调整
+- 重命名图片
 
 ### Getting Started
 
 1️⃣ clone deme
 
 ```
-git clone https://github.com/ConnectAI-E/BaseScript-Nextjs-Template
+git clone https://github.com/WumaCoder/bs-viewer
 pnpm install
 pnpm dev
 ```
 
-2️⃣ 复制 http://localhost:5173/ 到 多维表格 webview 地址
+2️⃣ 复制 http://localhost:3000/ 到 多维表格 webview 地址
