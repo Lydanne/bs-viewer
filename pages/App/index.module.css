@@ -1,10 +1,33 @@
 .main {
-  padding: 1.5rem 1rem 1rem;
 }
-.h4 {
-  font-size: calc(1.275rem + 0.3vw);
+
+.block-image {
+  --nxn: 3;
+  --scale: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--nxn), auto); /* 定义列数 */
+  margin: 5px;
+  margin-right: 0;
 }
-.code {
-  color: #d63384;
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+.image-item {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #eee;
+  margin-right: 5px;
+}
+.image-item::before {
+  content: "";
+  display: block;
+  padding-top: var(--scale); /* 设置padding为正方形边长的百分比 */
+}
+
+.image-item .image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--scale);
+  height: 100%;
+  object-fit: cover; /* 根据需要调整图像的适应方式 */
+  vertical-align: bottom;
 }
