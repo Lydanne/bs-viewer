@@ -6,7 +6,7 @@ import {
 } from "@douyinfe/semi-illustrations";
 
 import styles from "./index.module.css";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { IconEyeClosedSolid } from "@douyinfe/semi-icons";
 import {
@@ -20,11 +20,11 @@ const FilerobotImageEditor = dynamic(
   { ssr: false }
 );
 
-let initd = false;
-
 let base: any = null;
 let bridge: any = null;
+let table: any = null;
 let lang: string = "zh";
+let inited = false;
 
 type Selected = {
   field: any;
@@ -37,54 +37,54 @@ export default function App() {
   const [current, setCurrent] = useState(-1);
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
 
-  const init = async () => {
-    if (initd) {
+  const onSelectChange = useCallback(async () => {
+    console.log("onSelectionChange");
+    setLoading(true);
+    setSelected(undefined);
+    try {
+      const selected: Selected = {
+        field: null,
+        select: null,
+        selectImages: [],
+      };
+      const select = await base.getSelection();
+      const field: any = await table.getField(select.fieldId);
+      // const cell = await field.getCell(select.recordId);
+      const urls = await field.getAttachmentUrls(select.recordId);
+      const vals = await field.getValue(select.recordId);
+      selected.field = field;
+      selected.select = select;
+      vals.map((val: any, i: string | number) => {
+        selected.selectImages.push({
+          val,
+          url: urls[i],
+        });
+      });
+      console.log("onSelectionChange", selected);
+      setSelected(selected);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  const init = useCallback(async () => {
+    if (inited) {
       return;
     }
-    initd = true;
+    inited = true;
+    setLoading(true);
     const { bitable } = await import("@lark-base-open/js-sdk");
-    const table = await bitable.base.getActiveTable();
+    table = await bitable.base.getActiveTable();
     base = (table as any).base;
     bridge = (bitable as any).bridge;
-    base.onSelectionChange(async () => {
-      console.log("onSelectionChange");
-      setLoading(true);
-      setSelected(undefined);
-      try {
-        const selected: Selected = {
-          field: null,
-          select: null,
-          selectImages: [],
-        };
-        const select = await base.getSelection();
-        const field: any = await table.getField(select.fieldId);
-        // const cell = await field.getCell(select.recordId);
-        const urls = await field.getAttachmentUrls(select.recordId);
-        const vals = await field.getValue(select.recordId);
-        selected.field = field;
-        selected.select = select;
-        vals.map((val: any, i: string | number) => {
-          selected.selectImages.push({
-            val,
-            url: urls[i],
-          });
-        });
-        console.log("onSelectionChange", selected);
-        setSelected(selected);
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    });
+    base.onSelectionChange(onSelectChange);
     lang = await bridge.getLanguage();
-  };
+    await onSelectChange();
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     init();
-    console.log("创建");
-    return () => {
-      console.log("销毁");
-    };
   });
 
   const openImgEditor = (index: number) => {
