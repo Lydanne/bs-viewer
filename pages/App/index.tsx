@@ -133,33 +133,36 @@ export default function App() {
           style={{ marginTop: "20vh" }}
         />
       ) : current === -1 ? (
-        <div className={styles["block-image"]}>
-          {selected?.selectImages?.map((img, index) => {
-            return img.val.type.includes("image") ? (
-              <div className={styles["image-item"]} key={img.url}>
-                <img
-                  className={styles["image"]}
-                  src={img.url}
-                  alt={img.val.name}
-                  style={{ width: "100%", height: "100%" }}
-                  onClick={() => openImgEditor(index)}
-                />
-                <div className={styles["title"]}>{img.val.name}</div>
-              </div>
-            ) : (
-              <div className={styles["image-item"]} key={img.url}>
-                <div
-                  className={styles["image"]}
-                  style={{ background: "#eee" }}
-                  onClick={() => Toast.warning({ content: `展不支持该类型` })}
-                >
-                  <IconEyeClosedSolid size="large" />
+        <>
+          <div className={styles["block-image"]}>
+            {selected?.selectImages?.map((img, index) => {
+              return img.val.type.includes("image") ? (
+                <div className={styles["image-item"]} key={img.url}>
+                  <img
+                    className={styles["image"]}
+                    src={img.url}
+                    alt={img.val.name}
+                    style={{ width: "100%", height: "100%" }}
+                    onClick={() => openImgEditor(index)}
+                  />
+                  <div className={styles["title"]}>{img.val.name}</div>
                 </div>
-                <div className={styles["title"]}>{img.val.name}</div>
-              </div>
-            );
-          })}
-        </div>
+              ) : (
+                <div className={styles["image-item"]} key={img.url}>
+                  <div
+                    className={styles["image"]}
+                    style={{ background: "#eee" }}
+                    onClick={() => Toast.warning({ content: `展不支持该类型` })}
+                  >
+                    <IconEyeClosedSolid size="large" />
+                  </div>
+                  <div className={styles["title"]}>{img.val.name}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div className={styles["image-tip"]}>请点击上面图片进行编辑</div>
+        </>
       ) : (
         <div style={{ height: "100vh" }}>
           <FilerobotImageEditor
