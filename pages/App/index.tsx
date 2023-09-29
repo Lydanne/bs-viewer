@@ -180,6 +180,7 @@ export default function App() {
             }
             language={lang}
             source={selected.selectImages[current].url}
+            defaultSavedImageName={selected.selectImages[current].val.name}
             onSave={(editedImageObject, designState) =>
               saveImgEditor(editedImageObject as any)
             }
