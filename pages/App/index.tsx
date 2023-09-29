@@ -160,7 +160,7 @@ export default function App() {
                   <div
                     className={styles["image"]}
                     style={{ background: "#eee" }}
-                    onClick={() => Toast.warning({ content: `展不支持该类型` })}
+                    onClick={() => Toast.warning({ content: `暂不支持该类型` })}
                   >
                     <IconEyeClosedSolid size="large" />
                   </div>
