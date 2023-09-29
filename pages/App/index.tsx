@@ -7,19 +7,28 @@ import {
 
 import styles from "./index.module.css";
 import React, { useEffect, useState } from "react";
-import FilerobotImageEditor, {
-  TABS,
-  TOOLS,
-} from "react-filerobot-image-editor";
-import { IOpenAttachment } from "@lark-base-open/js-sdk";
+import type { IOpenAttachment } from "@lark-base-open/js-sdk";
+import dynamic from "next/dynamic";
+
+const FilerobotImageEditor = dynamic(
+  () => import("react-filerobot-image-editor"),
+  { ssr: false }
+);
+
 let initd = false;
 
-let base = null;
+let base: any = null;
+
+type Selected = {
+  field: any;
+  select: any;
+  selectImages: { val: any; url: any }[];
+};
 
 export default function App() {
   const [loading, setLoading] = useState(false);
   const [current, setCurrent] = useState(-1);
-  const [selected, setSelected] = useState(undefined);
+  const [selected, setSelected] = useState<Selected | undefined>(undefined);
 
   const init = async () => {
     if (initd) {
@@ -28,25 +37,25 @@ export default function App() {
     initd = true;
     const { bitable } = await import("@lark-base-open/js-sdk");
     const table = await bitable.base.getActiveTable();
-    base = table.base;
+    base = (table as any).base;
     base.onSelectionChange(async () => {
       console.log("onSelectionChange");
       setLoading(true);
       setSelected(undefined);
       try {
-        const selected = {
+        const selected: Selected = {
           field: null,
           select: null,
           selectImages: [],
         };
         const select = await base.getSelection();
-        const field = await table.getField(select.fieldId);
+        const field: any = await table.getField(select.fieldId);
         // const cell = await field.getCell(select.recordId);
         const urls = await field.getAttachmentUrls(select.recordId);
         const vals = await field.getValue(select.recordId);
         selected.field = field;
         selected.select = select;
-        vals.map((val, i) => {
+        vals.map((val: any, i: string | number) => {
           selected.selectImages.push({
             val,
             url: urls[i],
@@ -77,7 +86,34 @@ export default function App() {
     setCurrent(-1);
   };
 
-  const saveImgEditor = () => {};
+  const saveImgEditor = async ({
+    imageCanvas,
+    fullName,
+    mimeType,
+  }: {
+    imageCanvas: HTMLCanvasElement;
+    fullName: string;
+    mimeType: string;
+  }) => {
+    const file = canvasToFile(imageCanvas, fullName, mimeType);
+    // console.log(file);
+    // downloadFile(file);
+    if (!selected?.selectImages) {
+      throw new Error();
+    }
+    const newSelectImages = ([] as any).concat(selected.selectImages);
+    newSelectImages[current] = {
+      val: await fileToIOpenAttachment(base, file),
+      url: await fileToURL(file),
+    };
+
+    await selected.field.setValue(
+      selected.select.recordId,
+      newSelectImages.map((item: any) => item.val)
+    );
+    selected.selectImages = newSelectImages;
+    setSelected(selected);
+  };
 
   return (
     <div>
@@ -116,30 +152,9 @@ export default function App() {
           <FilerobotImageEditor
             translations={zhlang}
             source={selected.selectImages[current].url}
-            onSave={async (editedImageObject, designState) => {
-              console.log("saved", editedImageObject, designState);
-              const file = canvasToFile(
-                editedImageObject.imageCanvas,
-                editedImageObject.fullName,
-                editedImageObject.mimeType
-              );
-              console.log(file);
-              // downloadFile(file);
-              const currentSelected = selected.selectImages[current];
-              const newSelectImages = [].concat(selected.selectImages);
-              newSelectImages[current] = {
-                val: await fileToIOpenAttachment(base, file),
-                url: await fileToURL(file),
-              };
-              console.log("onSave", currentSelected, current, newSelectImages);
-
-              await selected.field.setValue(
-                selected.select.recordId,
-                newSelectImages.map((item) => item.val)
-              );
-              selected.selectImages = newSelectImages;
-              setSelected(selected);
-            }}
+            onSave={(editedImageObject, designState) =>
+              saveImgEditor(editedImageObject as any)
+            }
             onClose={closeImgEditor}
             annotationsCommon={{
               fill: "#ff0000",
@@ -189,9 +204,9 @@ export default function App() {
                 },
               ],
             }}
-            tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
-            defaultTabId={TABS.ANNOTATE} // or 'Annotate'
-            defaultToolId={TOOLS.TEXT} // or 'Text'
+            // tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
+            defaultTabId="Annotate" // or 'Annotate'
+            defaultToolId="Text" // or 'Text'
             savingPixelRatio={4}
             previewPixelRatio={0}
           />
@@ -215,14 +230,14 @@ async function fileToIOpenAttachment(
   };
 }
 
-function downloadFile(file) {
-  const downloadLink = document.createElement("a");
-  downloadLink.href = URL.createObjectURL(file);
-  downloadLink.download = file.name;
-  downloadLink.click();
-}
+// function downloadFile(file: Blob | MediaSource) {
+//   const downloadLink = document.createElement("a");
+//   downloadLink.href = URL.createObjectURL(file);
+//   downloadLink.download = file.name;
+//   downloadLink.click();
+// }
 
-function fileToURL(file) {
+function fileToURL(file: Blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -235,7 +250,11 @@ function fileToURL(file) {
   });
 }
 
-function canvasToFile(canvas, fileName, fileType = "image/png") {
+function canvasToFile(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  fileType = "image/png"
+) {
   // 获取Canvas上的图像数据（这里假设图像数据为DataURL）
   const imageDataURL = canvas.toDataURL(fileType);
 
@@ -249,7 +268,7 @@ function canvasToFile(canvas, fileName, fileType = "image/png") {
 }
 
 // 将DataURL转换为Blob对象的辅助函数
-function dataURLToBlob(dataURL) {
+function dataURLToBlob(dataURL: string) {
   const byteString = atob(dataURL.split(",")[1]);
   const mimeString = dataURL.split(",")[0].split(":")[1].split(";")[0];
   const arrayBuffer = new ArrayBuffer(byteString.length);
