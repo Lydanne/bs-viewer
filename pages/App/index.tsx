@@ -14,6 +14,7 @@ import {
   fileToIOpenAttachment,
   fileToURL,
 } from "../../utils/shared";
+import { useTranslation } from "react-i18next";
 
 const FilerobotImageEditor = dynamic(
   () => import("react-filerobot-image-editor"),
@@ -36,7 +37,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [current, setCurrent] = useState(-1);
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
-
+  const [t, i18n] = useTranslation();
   const onSelectChange = useCallback(async () => {
     console.log("onSelectionChange");
     setLoading(true);
@@ -80,6 +81,7 @@ export default function App() {
     bridge = (bitable as any).bridge;
     base.onSelectionChange(onSelectChange);
     lang = await bridge.getLanguage();
+    // i18n.changeLanguage(lang);
     await onSelectChange();
     setLoading(false);
   }, []);
@@ -138,7 +140,7 @@ export default function App() {
           darkModeImage={
             <IllustrationNoContentDark style={{ width: 150, height: 150 }} />
           }
-          description={"请选择有图片的单元格"}
+          description={t("empty")}
           style={{ marginTop: "20vh" }}
         />
       ) : current === -1 ? (
@@ -161,7 +163,9 @@ export default function App() {
                   <div
                     className={styles["image"]}
                     style={{ background: "#eee" }}
-                    onClick={() => Toast.warning({ content: `暂不支持该类型` })}
+                    onClick={() =>
+                      Toast.warning({ content: t("no-support-file") })
+                    }
                   >
                     <IconEyeClosedSolid size="large" />
                   </div>
@@ -170,15 +174,13 @@ export default function App() {
               );
             })}
           </div>
-          <div className={styles["image-tip"]}>请点击上面图片进行编辑</div>
+          <div className={styles["image-tip"]}>{t("image-tip")}</div>
         </>
       ) : (
         <div style={{ height: "100vh" }}>
           <FilerobotImageEditor
-            translations={
-              lang.includes("zh") ? FilerobotImageEditorLang_zh : undefined
-            }
-            language={lang}
+            translations={t('filerobot', { returnObjects: true })}
+            // language={lang}
             source={selected.selectImages[current].url}
             defaultSavedImageName={selected.selectImages[current]?.val?.name}
             onSave={(editedImageObject, designState) =>
@@ -244,105 +246,3 @@ export default function App() {
     </div>
   );
 }
-
-const FilerobotImageEditorLang_zh = {
-  name: "名称",
-  save: "保存",
-  saveAs: "保存",
-  back: "返回",
-  loading: "正在加载...",
-  resetOperations: "重置/删除所有操作",
-  changesLoseConfirmation: "所有更改将丢失",
-  changesLoseConfirmationHint: "确定要继续吗？",
-  cancel: "取消",
-  continue: "继续",
-  undoTitle: "撤销上一次操作",
-  redoTitle: "重做上一次操作",
-  showImageTitle: "显示原始图像",
-  zoomInTitle: "放大",
-  zoomOutTitle: "缩小",
-  toggleZoomMenuTitle: "切换缩放菜单",
-  adjustTab: "调整",
-  finetuneTab: "微调",
-  filtersTab: "滤镜",
-  watermarkTab: "水印",
-  annotateTab: "绘制",
-  resize: "调整大小",
-  resizeTab: "调整大小",
-  invalidImageError: "提供的图像无效。",
-  uploadImageError: "上传图像时出错。",
-  areNotImages: "不是图像",
-  isNotImage: "不是图像",
-  toBeUploaded: "待上传",
-  cropTool: "裁剪",
-  original: "原始",
-  custom: "自定义",
-  square: "正方形",
-  landscape: "横向",
-  portrait: "纵向",
-  ellipse: "椭圆形",
-  classicTv: "经典电视",
-  cinemascope: "电影宽屏",
-  arrowTool: "箭头",
-  blurTool: "模糊",
-  brightnessTool: "亮度",
-  contrastTool: "对比度",
-  ellipseTool: "椭圆",
-  unFlipX: "取消水平翻转",
-  flipX: "水平翻转",
-  unFlipY: "取消垂直翻转",
-  flipY: "垂直翻转",
-  hsvTool: "HSV",
-  hue: "色调",
-  saturation: "饱和度",
-  value: "明度",
-  imageTool: "图像",
-  importing: "导入中...",
-  addImage: "+ 添加图像",
-  uploadImage: "上传图像",
-  fromGallery: "从图库",
-  lineTool: "直线",
-  penTool: "钢笔",
-  polygonTool: "多边形",
-  sides: "边数",
-  rectangleTool: "矩形",
-  cornerRadius: "圆角半径",
-  resizeWidthTitle: "宽度（像素）",
-  resizeHeightTitle: "高度（像素）",
-  toggleRatioLockTitle: "切换比例锁定",
-  reset: "重置",
-  resetSize: "重置为原始图像大小",
-  rotateTool: "旋转",
-  textTool: "文本",
-  textSpacings: "文本间距",
-  textAlignment: "文本对齐",
-  fontFamily: "字体族",
-  size: "大小",
-  letterSpacing: "字间距",
-  lineHeight: "行高",
-  warmthTool: "温暖度",
-  addWatermark: "+ 添加水印",
-  addTextWatermark: "+ 添加文本水印",
-  addWatermarkTitle: "选择水印类型",
-  uploadWatermark: "上传水印",
-  addWatermarkAsText: "作为文本添加",
-  padding: "内边距",
-  shadow: "阴影",
-  horizontal: "水平",
-  vertical: "垂直",
-  blur: "模糊",
-  opacity: "不透明度",
-  position: "位置",
-  stroke: "描边",
-  saveAsModalLabel: "保存为图片",
-  extension: "扩展名",
-  nameIsRequired: "名称不能为空。",
-  quality: "质量",
-  imageDimensionsHoverTitle: "保存图像尺寸（宽 x 高）",
-  cropSizeLowerThanResizedWarning:
-    "注意，所选的裁剪区域小于应用的调整大小，可能会导致质量降低",
-  actualSize: "实际大小（100%）",
-  fitSize: "适应大小",
-  addImageTitle: "选择要添加的图像...",
-  mutualizedFailedToLoadImg: "加载图像失败。",
-};
