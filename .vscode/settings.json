@@ -1,3 +1,5 @@
 {
-  "commentTranslate.source": "Kaiqun.tencent-cloud-translate-tencentCloud"
+  "commentTranslate.source": "Kaiqun.tencent-cloud-translate-tencentCloud",
+  "i18n-ally.localesPaths": "public/locales",
+  "i18n-ally.keystyle": "nested"
 }
