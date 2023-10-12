@@ -77,7 +77,7 @@ export default function App() {
       return;
     }
     inited = true;
-    setLoading(true);
+    // setLoading(true);
     const { bitable } = await import("@lark-base-open/js-sdk");
     table = await bitable.base.getActiveTable();
     base = (table as any).base;
@@ -110,7 +110,7 @@ export default function App() {
     fullName: string;
     mimeType: string;
   }) => {
-    const file = canvasToFile(imageCanvas, fullName, mimeType);
+    const file = await canvasToFile(imageCanvas, fullName, mimeType);
     // console.log(file);
     // downloadFile(file);
     if (!selected?.selectImages) {

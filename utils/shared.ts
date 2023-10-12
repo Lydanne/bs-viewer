@@ -32,16 +32,23 @@ export function fileToURL(file: Blob) {
     reader.readAsDataURL(file);
   });
 }
-export function canvasToFile(
+export async function canvasToFile(
   canvas: HTMLCanvasElement,
   fileName: string,
   fileType = "image/png"
 ) {
   // 获取Canvas上的图像数据（这里假设图像数据为DataURL）
-  const imageDataURL = canvas.toDataURL(fileType);
+  // const imageDataURL = canvas.toDataURL(fileType);
 
-  // 将DataURL转换为Blob对象
-  const blob = dataURLToBlob(imageDataURL);
+  // // 将DataURL转换为Blob对象
+  // const blob = dataURLToBlob(imageDataURL);
+
+  const blob: Blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error("canvas to blob error"));
+      resolve(blob);
+    }, fileType, 1);
+  })
 
   // 创建File对象
   const file = new File([blob], fileName, { type: fileType });
