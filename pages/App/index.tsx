@@ -62,6 +62,9 @@ export default function App() {
         });
       });
       console.log("onSelectionChange", selected);
+      if (current > selected.selectImages.length - 1) {
+        setCurrent(-1);
+      }
       setSelected(selected);
     } catch (error) {
       console.error(error);
@@ -124,7 +127,9 @@ export default function App() {
       newSelectImages.map((item: any) => item.val)
     );
     selected.selectImages = newSelectImages;
+    setCurrent(-1);
     setSelected(selected);
+    Toast.success({ content: t("save-success") })
   };
 
   return (
@@ -143,7 +148,7 @@ export default function App() {
           description={t("empty")}
           style={{ marginTop: "20vh" }}
         />
-      ) : current === -1 ? (
+      ) : current === -1 || !selected?.selectImages[current] ? (
         <>
           <div className={styles["block-image"]}>
             {selected?.selectImages?.map((img, index) => {
@@ -240,6 +245,7 @@ export default function App() {
             defaultToolId="Text" // or 'Text'
             savingPixelRatio={4}
             previewPixelRatio={0}
+            defaultSavedImageQuality={1}
           />
         </div>
       )}
