@@ -243,8 +243,8 @@ export default function App() {
             // tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
             defaultTabId="Annotate" // or 'Annotate'
             defaultToolId="Text" // or 'Text'
-            savingPixelRatio={window.devicePixelRatio || 1}
-            previewPixelRatio={0}
+            savingPixelRatio={4}
+            previewPixelRatio={window.devicePixelRatio || 1}
             defaultSavedImageQuality={1}
           />
         </div>
