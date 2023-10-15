@@ -104,5 +104,7 @@
   },
   "save-success": "保存成功",
   "editing": "正在新的标签页编辑中...",
-  "full-mode": "全屏模式"
+  "full-mode": "全屏模式",
+  "back-list": "返回列表",
+  "back-edit": "回到编辑"
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Col, Image, Row, Spin, Empty, Badge, Toast, Switch, Typography } from "@douyinfe/semi-ui";
+import { Col, Image, Row, Spin, Empty, Badge, Toast, Switch, Typography, Button } from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
   IllustrationNoContentDark,
@@ -21,8 +21,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 
-const FilerobotImageEditor = dynamic(
-  () => import("react-filerobot-image-editor"),
+const Editor = dynamic(
+  () => import("../../components/Editor"),
   { ssr: false }
 );
 
@@ -51,6 +51,7 @@ export default function App() {
   const [current, setCurrent] = useState(-1);
   const [fullMode, setFullMode] = useState(storeFullMode);
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
+  const [nextWin, setNextWin] = useState<Window | undefined>(undefined);
   const [t, i18n] = useTranslation();
 
   useEffect(() => {
@@ -133,14 +134,12 @@ export default function App() {
           defaultSavedImageName: selectImage?.val?.name,
           onSave: async (editedImageObject: any, designState: any) => {
             console.log(editedImageObject, designState);
-            await saveImgEditor(editedImageObject as any, index)
+            await saveImgEditor(editedImageObject as any, designState, index)
             nextWin.close();
           },
           onClose: () => {
             closeImgEditor();
             nextWin.close();
-            console.log(selected);
-
           }
         }
       },
@@ -150,6 +149,7 @@ export default function App() {
         closeImgEditor();
       }
     })
+    setNextWin(nextWin);
   }, [selected, fullMode]);
 
   const closeImgEditor = useCallback(() => {
@@ -166,9 +166,9 @@ export default function App() {
     imageCanvas: HTMLCanvasElement;
     fullName: string;
     mimeType: string;
-  }, index: number = current) => {
+  }, imageDesignState: any, index: number = current) => {
     const file = await canvasToFile(imageCanvas, fullName, mimeType);
-    console.log(file);
+    // console.log(file);
     // const file = await base64ToFile(imageBase64, fullName, mimeType);
     // downloadFile(file);
     if (!selected?.selectImages) {
@@ -180,7 +180,7 @@ export default function App() {
       url: await fileToURL(file),
     };
 
-    // console.log(newSelectImages);
+    // console.log(newSelectImages, index);
 
     await selected.field.setValue(
       selected.select.recordId,
@@ -255,72 +255,23 @@ export default function App() {
               darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
               description={t('editing')}
               style={{ marginTop: "20vh" }}
-            />
+            >
+              <div>
+                <Button style={{ padding: '6px 24px', marginRight: 12 }} type="primary" onClick={nextWin?.close?.bind(nextWin)}>
+                  {t('back-list')}
+                </Button>
+                <Button style={{ padding: '6px 24px' }} theme="solid" type="primary" onClick={nextWin?.focus?.bind(nextWin)}>
+                  {t('back-edit')}
+                </Button>
+              </div>
+            </Empty>
           </div>
           : <div style={{ height: "100vh" }}>
-            <FilerobotImageEditor
-              translations={t('filerobot', { returnObjects: true })}
-              // language={lang}
+            <Editor
               source={selected.selectImages[current].url}
               defaultSavedImageName={selected.selectImages[current]?.val?.name}
-              onSave={(editedImageObject, designState) =>
-                saveImgEditor(editedImageObject as any)
-              }
+              onSave={saveImgEditor}
               onClose={closeImgEditor}
-              annotationsCommon={{
-                fill: "#ff0000",
-              }}
-              // showCanvasOnly
-              Text={{ text: "Text" }}
-              Rotate={{ angle: 90, componentType: "slider" }}
-              Crop={{
-                presetsItems: [
-                  {
-                    titleKey: "classicTv",
-                    descriptionKey: "4:3",
-                    ratio: 4 / 3,
-                    // icon: CropClassicTv, // optional, CropClassicTv is a React Function component. Possible (React Function component, string or HTML Element)
-                  },
-                  {
-                    titleKey: "cinemascope",
-                    descriptionKey: "21:9",
-                    ratio: 21 / 9,
-                    // icon: CropCinemaScope, // optional, CropCinemaScope is a React Function component.  Possible (React Function component, string or HTML Element)
-                  },
-                ],
-                presetsFolders: [
-                  {
-                    titleKey: "socialMedia",
-
-                    // icon: Social, // optional, Social is a React Function component. Possible (React Function component, string or HTML Element)
-                    groups: [
-                      {
-                        titleKey: "facebook",
-                        items: [
-                          {
-                            titleKey: "profile",
-                            width: 180,
-                            height: 180,
-                            descriptionKey: "fbProfileSize",
-                          },
-                          {
-                            titleKey: "coverPhoto",
-                            width: 820,
-                            height: 312,
-                            descriptionKey: "fbCoverPhotoSize",
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              }}
-              // tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
-              defaultTabId="Annotate" // or 'Annotate'
-              defaultToolId="Text" // or 'Text'
-              savingPixelRatio={4}
-              previewPixelRatio={window ? window?.devicePixelRatio || 1 : 1}
-              defaultSavedImageQuality={1}
             />
           </div>
       )}

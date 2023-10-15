@@ -5,5 +5,7 @@
   "filerobot": {},
   "save-success": "Saved successfully",
   "editing": "Editing new tab page...",
-  "full-mode": "full screen mode"
+  "full-mode": "full screen mode",
+  "back-list": "Back to list",
+  "back-edit": "Back to editing"
 }
