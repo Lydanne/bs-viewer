@@ -1,20 +1,25 @@
 "use client";
-import { Col, Image, Row, Spin, Empty, Badge, Toast } from "@douyinfe/semi-ui";
+import { Col, Image, Row, Spin, Empty, Badge, Toast, Switch, Typography } from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
   IllustrationNoContentDark,
+  IllustrationConstruction,
+  IllustrationConstructionDark
 } from "@douyinfe/semi-illustrations";
 
 import styles from "./index.module.css";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { IconEyeClosedSolid } from "@douyinfe/semi-icons";
 import {
   canvasToFile,
   fileToIOpenAttachment,
   fileToURL,
+  base64ToFile,
+  downloadFile
 } from "../../utils/shared";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/router";
 
 const FilerobotImageEditor = dynamic(
   () => import("react-filerobot-image-editor"),
@@ -33,15 +38,25 @@ type Selected = {
   selectImages: { val: any; url: any }[];
 };
 
+window.devicePixelRatio = window.devicePixelRatio * 10;
+
+const storeFullMode = localStorage.getItem('fullMode') === '1';
+
 export default function App() {
-  const [loading, setLoading] = useState(false);
+  const { Text } = Typography;
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(-1);
+  const [fullMode, setFullMode] = useState(storeFullMode);
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
   const [t, i18n] = useTranslation();
+
+  useEffect(() => {
+    localStorage.setItem('fullMode', fullMode ? '1' : '0');
+  }, [fullMode])
+
   const onSelectChange = useCallback(async () => {
-    console.log("onSelectionChange");
     setLoading(true);
-    setSelected(undefined);
     try {
       const selected: Selected = {
         field: null,
@@ -61,8 +76,7 @@ export default function App() {
           url: urls[i],
         });
       });
-      console.log("onSelectionChange", selected);
-      if (current > selected.selectImages.length - 1) {
+      if (current > (selected.selectImages.length - 1)) {
         setCurrent(-1);
       }
       setSelected(selected);
@@ -70,7 +84,9 @@ export default function App() {
       console.error(error);
     }
     setLoading(false);
-  }, []);
+  }, [current]);
+  const onSelectionChangeRef = useRef(onSelectChange);
+  onSelectionChangeRef.current = onSelectChange;
 
   const init = useCallback(async () => {
     if (inited) {
@@ -82,45 +98,84 @@ export default function App() {
     table = await bitable.base.getActiveTable();
     base = (table as any).base;
     bridge = (bitable as any).bridge;
-    base.onSelectionChange(onSelectChange);
+    base.onSelectionChange(() => onSelectionChangeRef.current());
     lang = await bridge.getLanguage();
     // i18n.changeLanguage(lang);
-    await onSelectChange();
+    await onSelectionChangeRef.current();
     setLoading(false);
   }, []);
-
   useEffect(() => {
     init();
   });
 
-  const openImgEditor = (index: number) => {
+  const openImgEditor = useCallback(async (index: number) => {
+    if (!selected) {
+      return;
+    }
+    if (!fullMode) {
+      return setCurrent(index);
+    }
+    const nextWin = window.open(`/editor`, '_blank', 'fullscreen=yes')
+    if (!nextWin) {
+      return;
+    }
     setCurrent(index);
-  };
+    const selectImage = selected.selectImages[index];
+    nextWin.bridge = {
+      getOptions: () => {
+        return {
+          source: selectImage.url,
+          defaultSavedImageName: selectImage?.val?.name,
+          onSave: async (editedImageObject, designState) => {
+            console.log(editedImageObject, designState);
+            await saveImgEditor(editedImageObject as any, index)
+            nextWin.close();
+          },
+          onClose: () => {
+            closeImgEditor();
+            nextWin.close();
+            console.log(selected);
 
-  const closeImgEditor = () => {
+          }
+        }
+      },
+    }
+    nextWin.addEventListener('unload', () => {
+      if (nextWin.isLoaded) {
+        closeImgEditor();
+      }
+    })
+  }, [selected, fullMode]);
+
+  const closeImgEditor = useCallback(() => {
     setCurrent(-1);
-  };
+  }, []);
 
   const saveImgEditor = async ({
     imageCanvas,
     fullName,
     mimeType,
+    imageBase64,
   }: {
+    imageBase64: string,
     imageCanvas: HTMLCanvasElement;
     fullName: string;
     mimeType: string;
-  }) => {
+  }, index: number = current) => {
     const file = await canvasToFile(imageCanvas, fullName, mimeType);
-    // console.log(file);
+    console.log(file);
+    // const file = await base64ToFile(imageBase64, fullName, mimeType);
     // downloadFile(file);
     if (!selected?.selectImages) {
       throw new Error();
     }
     const newSelectImages = ([] as any).concat(selected.selectImages);
-    newSelectImages[current] = {
+    newSelectImages[index] = {
       val: await fileToIOpenAttachment(base, file),
       url: await fileToURL(file),
     };
+
+    // console.log(newSelectImages);
 
     await selected.field.setValue(
       selected.select.recordId,
@@ -148,8 +203,14 @@ export default function App() {
           description={t("empty")}
           style={{ marginTop: "20vh" }}
         />
-      ) : current === -1 || !selected?.selectImages[current] ? (
+      ) : current === -1 ? (
         <>
+          <div className={styles["block-menu"]}>
+            <div className={styles["menu-item"]}>
+              <Text>{t('full-mode')}</Text>
+              <Switch size="small" checked={fullMode} onChange={setFullMode} aria-label="open full model" />
+            </div>
+          </div>
           <div className={styles["block-image"]}>
             {selected?.selectImages?.map((img, index) => {
               return img.val.type.includes("image") ? (
@@ -182,72 +243,81 @@ export default function App() {
           <div className={styles["image-tip"]}>{t("image-tip")}</div>
         </>
       ) : (
-        <div style={{ height: "100vh" }}>
-          <FilerobotImageEditor
-            translations={t('filerobot', { returnObjects: true })}
-            // language={lang}
-            source={selected.selectImages[current].url}
-            defaultSavedImageName={selected.selectImages[current]?.val?.name}
-            onSave={(editedImageObject, designState) =>
-              saveImgEditor(editedImageObject as any)
-            }
-            onClose={closeImgEditor}
-            annotationsCommon={{
-              fill: "#ff0000",
-            }}
-            // showCanvasOnly
-            Text={{ text: "Text" }}
-            Rotate={{ angle: 90, componentType: "slider" }}
-            Crop={{
-              presetsItems: [
-                {
-                  titleKey: "classicTv",
-                  descriptionKey: "4:3",
-                  ratio: 4 / 3,
-                  // icon: CropClassicTv, // optional, CropClassicTv is a React Function component. Possible (React Function component, string or HTML Element)
-                },
-                {
-                  titleKey: "cinemascope",
-                  descriptionKey: "21:9",
-                  ratio: 21 / 9,
-                  // icon: CropCinemaScope, // optional, CropCinemaScope is a React Function component.  Possible (React Function component, string or HTML Element)
-                },
-              ],
-              presetsFolders: [
-                {
-                  titleKey: "socialMedia",
+        fullMode ?
+          <div>
+            <Empty
+              image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
+              darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
+              description={t('editing')}
+              style={{ marginTop: "20vh" }}
+            />
+          </div>
+          : <div style={{ height: "100vh" }}>
+            <FilerobotImageEditor
+              translations={t('filerobot', { returnObjects: true })}
+              // language={lang}
+              source={selected.selectImages[current].url}
+              defaultSavedImageName={selected.selectImages[current]?.val?.name}
+              onSave={(editedImageObject, designState) =>
+                saveImgEditor(editedImageObject as any)
+              }
+              onClose={closeImgEditor}
+              annotationsCommon={{
+                fill: "#ff0000",
+              }}
+              // showCanvasOnly
+              Text={{ text: "Text" }}
+              Rotate={{ angle: 90, componentType: "slider" }}
+              Crop={{
+                presetsItems: [
+                  {
+                    titleKey: "classicTv",
+                    descriptionKey: "4:3",
+                    ratio: 4 / 3,
+                    // icon: CropClassicTv, // optional, CropClassicTv is a React Function component. Possible (React Function component, string or HTML Element)
+                  },
+                  {
+                    titleKey: "cinemascope",
+                    descriptionKey: "21:9",
+                    ratio: 21 / 9,
+                    // icon: CropCinemaScope, // optional, CropCinemaScope is a React Function component.  Possible (React Function component, string or HTML Element)
+                  },
+                ],
+                presetsFolders: [
+                  {
+                    titleKey: "socialMedia",
 
-                  // icon: Social, // optional, Social is a React Function component. Possible (React Function component, string or HTML Element)
-                  groups: [
-                    {
-                      titleKey: "facebook",
-                      items: [
-                        {
-                          titleKey: "profile",
-                          width: 180,
-                          height: 180,
-                          descriptionKey: "fbProfileSize",
-                        },
-                        {
-                          titleKey: "coverPhoto",
-                          width: 820,
-                          height: 312,
-                          descriptionKey: "fbCoverPhotoSize",
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            }}
-            // tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
-            defaultTabId="Annotate" // or 'Annotate'
-            defaultToolId="Text" // or 'Text'
-            savingPixelRatio={4}
-            previewPixelRatio={window.devicePixelRatio || 1}
-            defaultSavedImageQuality={1}
-          />
-        </div>
+                    // icon: Social, // optional, Social is a React Function component. Possible (React Function component, string or HTML Element)
+                    groups: [
+                      {
+                        titleKey: "facebook",
+                        items: [
+                          {
+                            titleKey: "profile",
+                            width: 180,
+                            height: 180,
+                            descriptionKey: "fbProfileSize",
+                          },
+                          {
+                            titleKey: "coverPhoto",
+                            width: 820,
+                            height: 312,
+                            descriptionKey: "fbCoverPhotoSize",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              }}
+              // tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
+              defaultTabId="Annotate" // or 'Annotate'
+              defaultToolId="Text" // or 'Text'
+              savingPixelRatio={4}
+              previewPixelRatio={window.devicePixelRatio || 1}
+              defaultSavedImageQuality={1}
+            />
+          </div>
       )}
     </div>
   );

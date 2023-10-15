@@ -102,5 +102,7 @@
     "addImageTitle": "选择要添加的图像...",
     "mutualizedFailedToLoadImg": "加载图像失败。"
   },
-  "save-success": "保存成功"
+  "save-success": "保存成功",
+  "editing": "正在新的标签页编辑中...",
+  "full-mode": "全屏模式"
 }

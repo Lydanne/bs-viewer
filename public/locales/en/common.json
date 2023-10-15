@@ -3,5 +3,7 @@
   "no-support-file": "This type is not supported yet",
   "image-tip": "Please click on the image above to edit",
   "filerobot": {},
-  "save-success": "Saved successfully"
+  "save-success": "Saved successfully",
+  "editing": "Editing new tab page...",
+  "full-mode": "full screen mode"
 }
