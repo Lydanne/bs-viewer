@@ -39,7 +39,7 @@ type Selected = {
 };
 
 if (typeof window !== 'undefined') {
-  window.devicePixelRatio = window.devicePixelRatio * 10;
+  window.devicePixelRatio = window.devicePixelRatio * 4;
 }
 
 const storeFullMode = typeof localStorage !== 'undefined' ? localStorage.getItem('fullMode') === '1' : false;
