@@ -13,11 +13,15 @@ const FilerobotImageEditor = dynamic(
   { ssr: false }
 );
 
-window.onload = () => {
-  window.isLoaded = true;
+let bridge: any = undefined;
+if (typeof window !== 'undefined') {
+  bridge = (window as any).bridge;
+  window.onload = () => {
+    (window as any).isLoaded = true;
+  }
 }
 
-const options = window?.bridge?.getOptions();
+const options = bridge?.getOptions();
 
 export default function Edit() {
   const ref = useRef(null)

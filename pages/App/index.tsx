@@ -38,9 +38,11 @@ type Selected = {
   selectImages: { val: any; url: any }[];
 };
 
-window.devicePixelRatio = window.devicePixelRatio * 10;
+if (typeof window !== 'undefined') {
+  window.devicePixelRatio = window.devicePixelRatio * 10;
+}
 
-const storeFullMode = localStorage.getItem('fullMode') === '1';
+const storeFullMode = typeof localStorage !== 'undefined' ? localStorage.getItem('fullMode') === '1' : false;
 
 export default function App() {
   const { Text } = Typography;
@@ -115,7 +117,10 @@ export default function App() {
     if (!fullMode) {
       return setCurrent(index);
     }
-    const nextWin = window.open(`/editor`, '_blank', 'fullscreen=yes')
+    if (!window) {
+      return setCurrent(index);
+    }
+    const nextWin = window.open(`/editor`, '_blank', 'fullscreen=yes') as any
     if (!nextWin) {
       return;
     }
@@ -126,7 +131,7 @@ export default function App() {
         return {
           source: selectImage.url,
           defaultSavedImageName: selectImage?.val?.name,
-          onSave: async (editedImageObject, designState) => {
+          onSave: async (editedImageObject: any, designState: any) => {
             console.log(editedImageObject, designState);
             await saveImgEditor(editedImageObject as any, index)
             nextWin.close();
@@ -314,7 +319,7 @@ export default function App() {
               defaultTabId="Annotate" // or 'Annotate'
               defaultToolId="Text" // or 'Text'
               savingPixelRatio={4}
-              previewPixelRatio={window.devicePixelRatio || 1}
+              previewPixelRatio={window ? window?.devicePixelRatio || 1 : 1}
               defaultSavedImageQuality={1}
             />
           </div>
