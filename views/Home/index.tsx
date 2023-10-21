@@ -217,11 +217,14 @@ export default function App() {
     // console.log("setSelected", oldIndex, newIndex);
     setSelected((selected) => {
       if (selected) {
-        const newSelect = { ...selected, selectImages: arrayMoveImmutable(
-          selected.selectImages,
-          oldIndex,
-          newIndex
-        ) };
+        const newSelect = {
+          ...selected,
+          selectImages: arrayMoveImmutable(
+            selected.selectImages,
+            oldIndex,
+            newIndex
+          ),
+        };
         newSelect.field.setValue(
           selected.select.recordId,
           newSelect.selectImages.map((item: any) => item.val)
@@ -229,9 +232,12 @@ export default function App() {
         return newSelect;
       }
       return selected;
-
     });
   };
+
+  const onCaptureTitle = useCallback(()=>{
+
+  },[])
 
   return (
     <div>
@@ -284,15 +290,24 @@ export default function App() {
                       <img
                         className={styles["image"]}
                         src={
-                          img.val.type.includes("image") ?
-                            img.url : '/no-image.svg'
+                          img.val.type.includes("image")
+                            ? img.url
+                            : "/no-image.svg"
                         }
                         alt={img.val.name}
                         style={{ width: "100%", height: "100%" }}
                       />
-
-
-                      <div className={styles["title"]}>{img.val.name}</div>
+                      <Text
+                        ellipsis={{
+                          showTooltip: true
+                        }}
+                        className={styles["title"]}
+                        size="small"
+                        onClick={(e) => e.stopPropagation()}
+                        onDoubleClickCapture={() => onCaptureTitle(index)}
+                      >
+                        {img.val.name}
+                      </Text>{" "}
                     </div>
                   }
                 </SortableItem>
@@ -349,6 +364,6 @@ export default function App() {
 }
 
 function fileExt(file: string) {
-  const ext = file.split('.').pop();
-  return ext ? ext.toLowerCase() : 'unknown';
+  const ext = file.split(".").pop();
+  return ext ? ext.toLowerCase() : "unknown";
 }
