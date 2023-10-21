@@ -235,7 +235,7 @@ export default function Home() {
     });
   };
 
-  const onCaptureTitle = useCallback(()=>{
+  const onCaptureTitle = useCallback((index: number)=>{
 
   },[])
 
