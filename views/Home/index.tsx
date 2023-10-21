@@ -57,7 +57,7 @@ const storeFullMode =
     ? localStorage.getItem("fullMode") === "1"
     : false;
 
-export default function App() {
+export default function Home() {
   const { Text } = Typography;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
