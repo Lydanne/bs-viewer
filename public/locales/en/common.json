@@ -1,7 +1,7 @@
 {
   "empty": "Please select the cell with pictures.",
   "no-support-file": "This type is not supported yet",
-  "image-tip": "Please click on the image above to edit",
+  "image-tip": "Please click on the image above to edit or try dragging to change the order.",
   "filerobot": {},
   "save-success": "Saved successfully",
   "editing": "Editing new tab page...",

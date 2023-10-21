@@ -1,10 +1,21 @@
 "use client";
-import { Col, Image, Row, Spin, Empty, Badge, Toast, Switch, Typography, Button } from "@douyinfe/semi-ui";
+import {
+  Col,
+  Image,
+  Row,
+  Spin,
+  Empty,
+  Badge,
+  Toast,
+  Switch,
+  Typography,
+  Button,
+} from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
   IllustrationNoContentDark,
   IllustrationConstruction,
-  IllustrationConstructionDark
+  IllustrationConstructionDark,
 } from "@douyinfe/semi-illustrations";
 
 import styles from "./index.module.css";
@@ -16,15 +27,14 @@ import {
   fileToIOpenAttachment,
   fileToURL,
   base64ToFile,
-  downloadFile
+  downloadFile,
 } from "../../utils/shared";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
+import { arrayMoveImmutable } from "array-move";
+import SortableList, { SortableItem } from "react-easy-sort";
 
-const Editor = dynamic(
-  () => import("../../components/Editor"),
-  { ssr: false }
-);
+const Editor = dynamic(() => import("../../components/Editor"), { ssr: false });
 
 let base: any = null;
 let bridge: any = null;
@@ -38,11 +48,14 @@ type Selected = {
   selectImages: { val: any; url: any }[];
 };
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.devicePixelRatio = window.devicePixelRatio * 4;
 }
 
-const storeFullMode = typeof localStorage !== 'undefined' ? localStorage.getItem('fullMode') === '1' : false;
+const storeFullMode =
+  typeof localStorage !== "undefined"
+    ? localStorage.getItem("fullMode") === "1"
+    : false;
 
 export default function App() {
   const { Text } = Typography;
@@ -55,8 +68,8 @@ export default function App() {
   const [t, i18n] = useTranslation();
 
   useEffect(() => {
-    localStorage.setItem('fullMode', fullMode ? '1' : '0');
-  }, [fullMode])
+    localStorage.setItem("fullMode", fullMode ? "1" : "0");
+  }, [fullMode]);
 
   const onSelectChange = useCallback(async () => {
     setLoading(true);
@@ -79,11 +92,12 @@ export default function App() {
           url: urls[i],
         });
       });
-      if (current > (selected.selectImages.length - 1)) {
+      if (current > selected.selectImages.length - 1) {
         setCurrent(-1);
       }
       setSelected(selected);
     } catch (error) {
+      setSelected(undefined);
       console.error(error);
     }
     setLoading(false);
@@ -111,62 +125,69 @@ export default function App() {
     init();
   });
 
-  const openImgEditor = useCallback(async (index: number) => {
-    if (!selected) {
-      return;
-    }
-    if (!fullMode) {
-      return setCurrent(index);
-    }
-    if (!window) {
-      return setCurrent(index);
-    }
-    const nextWin = window.open(`/editor`, '_blank', 'fullscreen=yes') as any
-    if (!nextWin) {
-      return;
-    }
-    setCurrent(index);
-    const selectImage = selected.selectImages[index];
-    nextWin.bridge = {
-      getOptions: () => {
-        return {
-          source: selectImage.url,
-          defaultSavedImageName: selectImage?.val?.name,
-          onSave: async (editedImageObject: any, designState: any) => {
-            console.log(editedImageObject, designState);
-            await saveImgEditor(editedImageObject as any, designState, index)
-            nextWin.close();
-          },
-          onClose: () => {
-            closeImgEditor();
-            nextWin.close();
-          }
-        }
-      },
-    }
-    nextWin.addEventListener('unload', () => {
-      if (nextWin.isLoaded) {
-        closeImgEditor();
+  const openImgEditor = useCallback(
+    async (index: number) => {
+      if (!selected) {
+        return;
       }
-    })
-    setNextWin(nextWin);
-  }, [selected, fullMode]);
+      if (!fullMode) {
+        return setCurrent(index);
+      }
+      if (!window) {
+        return setCurrent(index);
+      }
+      const nextWin = window.open(`/editor`, "_blank", "fullscreen=yes") as any;
+      if (!nextWin) {
+        return;
+      }
+      setCurrent(index);
+      const selectImage = selected.selectImages[index];
+      nextWin.bridge = {
+        getOptions: () => {
+          return {
+            source: selectImage.url,
+            defaultSavedImageName: selectImage?.val?.name,
+            onSave: async (editedImageObject: any, designState: any) => {
+              console.log(editedImageObject, designState);
+              await saveImgEditor(editedImageObject as any, designState, index);
+              nextWin.close();
+            },
+            onClose: () => {
+              closeImgEditor();
+              nextWin.close();
+            },
+          };
+        },
+      };
+      nextWin.addEventListener("unload", () => {
+        if (nextWin.isLoaded) {
+          closeImgEditor();
+        }
+      });
+      setNextWin(nextWin);
+    },
+    [selected, fullMode]
+  );
 
   const closeImgEditor = useCallback(() => {
     setCurrent(-1);
   }, []);
 
-  const saveImgEditor = async ({
-    imageCanvas,
-    fullName,
-    mimeType,
-    imageBase64,
-  }: {
-    imageBase64: string,
-    imageCanvas: HTMLCanvasElement;
-    fullName: string;
-    mimeType: string;
-  }, imageDesignState: any, index: number = current) => {
+  const saveImgEditor = async (
+    {
+      imageCanvas,
+      fullName,
+      mimeType,
+      imageBase64,
+    }: {
+      imageBase64: string;
+      imageCanvas: HTMLCanvasElement;
+      fullName: string;
+      mimeType: string;
+    },
+    imageDesignState: any,
+    index: number = current
+  ) => {
     const file = await canvasToFile(imageCanvas, fullName, mimeType);
     // console.log(file);
     // const file = await base64ToFile(imageBase64, fullName, mimeType);
@@ -189,7 +210,27 @@ export default function App() {
     selected.selectImages = newSelectImages;
     setCurrent(-1);
     setSelected(selected);
-    Toast.success({ content: t("save-success") })
+    Toast.success({ content: t("save-success") });
+  };
+
+  const onSortEnd = (oldIndex: number, newIndex: number) => {
+    // console.log("setSelected", oldIndex, newIndex);
+    setSelected((selected) => {
+      if (selected) {
+        const newSelect = { ...selected, selectImages: arrayMoveImmutable(
+          selected.selectImages,
+          oldIndex,
+          newIndex
+        ) };
+        newSelect.field.setValue(
+          selected.select.recordId,
+          newSelect.selectImages.map((item: any) => item.val)
+        );
+        return newSelect;
+      }
+      return selected;
+
+    });
   };
 
   return (
@@ -212,69 +253,102 @@ export default function App() {
         <>
           <div className={styles["block-menu"]}>
             <div className={styles["menu-item"]}>
-              <Text>{t('full-mode')}</Text>
-              <Switch size="small" checked={fullMode} onChange={setFullMode} aria-label="open full model" />
+              <Text>{t("full-mode")}</Text>
+              <Switch
+                size="small"
+                checked={fullMode}
+                onChange={setFullMode}
+                aria-label="open full model"
+              />
             </div>
           </div>
-          <div className={styles["block-image"]}>
+          <SortableList
+            onSortEnd={onSortEnd}
+            draggedItemClassName="dragged"
+            className={styles["block-image"]}
+          >
             {selected?.selectImages?.map((img, index) => {
-              return img.val.type.includes("image") ? (
-                <div className={styles["image-item"]} key={img.url}>
-                  <img
-                    className={styles["image"]}
-                    src={img.url}
-                    alt={img.val.name}
-                    style={{ width: "100%", height: "100%" }}
-                    onClick={() => openImgEditor(index)}
-                  />
-                  <div className={styles["title"]}>{img.val.name}</div>
-                </div>
-              ) : (
-                <div className={styles["image-item"]} key={img.url}>
-                  <div
-                    className={styles["image"]}
-                    style={{ background: "#eee" }}
-                    onClick={() =>
-                      Toast.warning({ content: t("no-support-file") })
-                    }
-                  >
-                    <IconEyeClosedSolid size="large" />
-                  </div>
-                  <div className={styles["title"]}>{img.val.name}</div>
-                </div>
+              return (
+                <SortableItem key={img.url}>
+                  {
+                    <div
+                      className={styles["image-item"]}
+                      style={{ background: "#eee" }}
+                      key={img.url}
+                      onClick={() =>
+                        img.val.type.includes("image")
+                          ? openImgEditor(index)
+                          : Toast.warning({ content: t("no-support-file") })
+                      }
+                    >
+                      <img
+                        className={styles["image"]}
+                        src={
+                          img.val.type.includes("image") ?
+                            img.url : '/no-image.svg'
+                        }
+                        alt={img.val.name}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+
+
+                      <div className={styles["title"]}>{img.val.name}</div>
+                    </div>
+                  }
+                </SortableItem>
               );
             })}
-          </div>
+          </SortableList>
           <div className={styles["image-tip"]}>{t("image-tip")}</div>
         </>
+      ) : fullMode ? (
+        <div>
+          <Empty
+            image={
+              <IllustrationConstruction style={{ width: 150, height: 150 }} />
+            }
+            darkModeImage={
+              <IllustrationConstructionDark
+                style={{ width: 150, height: 150 }}
+              />
+            }
+            description={t("editing")}
+            style={{ marginTop: "20vh" }}
+          >
+            <div>
+              <Button
+                style={{ padding: "6px 24px", marginRight: 12 }}
+                type="primary"
+                onClick={nextWin?.close?.bind(nextWin)}
+              >
+                {t("back-list")}
+              </Button>
+              <Button
+                style={{ padding: "6px 24px" }}
+                theme="solid"
+                type="primary"
+                onClick={nextWin?.focus?.bind(nextWin)}
+              >
+                {t("back-edit")}
+              </Button>
+            </div>
+          </Empty>
+        </div>
       ) : (
-        fullMode ?
-          <div>
-            <Empty
-              image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
-              darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
-              description={t('editing')}
-              style={{ marginTop: "20vh" }}
-            >
-              <div>
-                <Button style={{ padding: '6px 24px', marginRight: 12 }} type="primary" onClick={nextWin?.close?.bind(nextWin)}>
-                  {t('back-list')}
-                </Button>
-                <Button style={{ padding: '6px 24px' }} theme="solid" type="primary" onClick={nextWin?.focus?.bind(nextWin)}>
-                  {t('back-edit')}
-                </Button>
-              </div>
-            </Empty>
-          </div>
-          : <div style={{ height: "100vh" }}>
-            <Editor
-              source={selected.selectImages[current].url}
-              defaultSavedImageName={selected.selectImages[current]?.val?.name}
-              onSave={saveImgEditor}
-              onClose={closeImgEditor}
-            />
-          </div>
+        <div style={{ height: "100vh" }}>
+          <Editor
+            source={selected.selectImages[current].url}
+            defaultSavedImageName={selected.selectImages[current]?.val?.name}
+            onSave={saveImgEditor}
+            onClose={closeImgEditor}
+          />
+        </div>
       )}
     </div>
   );
+}
+
+function fileExt(file: string) {
+  const ext = file.split('.').pop();
+  return ext ? ext.toLowerCase() : 'unknown';
 }

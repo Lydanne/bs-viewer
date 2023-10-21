@@ -8,6 +8,7 @@
 }
 
 .menu-item {
+  user-select: none;
   display: flex;
   align-items: center;
   border-radius: 5px;
@@ -18,11 +19,13 @@
 .block-image {
   --nxn: 3;
   --scale: 100%;
+  user-select: none;
   display: grid;
   grid-template-columns: repeat(var(--nxn), auto);
   /* 定义列数 */
   margin: 5px;
   margin-right: 0;
+  /* cursor: grab; */
 }
 
 .image-item {
@@ -40,6 +43,8 @@
 }
 
 .image-item .image {
+  user-select: none;
+  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;

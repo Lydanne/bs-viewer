@@ -1,7 +1,7 @@
 {
   "empty": "请选择有图片的单元格。",
   "no-support-file": "暂不支持该类型",
-  "image-tip": "请点击上面图片进行编辑",
+  "image-tip": "请点击上面图片进行编辑或者尝试拖动来改变顺序.",
   "filerobot": {
     "name": "名称",
     "save": "保存",
