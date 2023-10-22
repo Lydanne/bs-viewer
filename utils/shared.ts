@@ -86,10 +86,54 @@ export function downloadFile(file: File) {
   downloadLink.click();
 }
 
+export function urlToFile(url: string, filename: string, mimeType: string) {
+  return fetch(url)
+    .then((res) => res.blob())
+    .then((blob) => new File([blob], filename, { type: mimeType }));
+}
+
 export function fileExt(file: string) {
   const [name, ext] = file.split(".");
   return [
     name,
     ext ? "." + ext.toLowerCase() : undefined
   ]
+}
+
+export function smartFileSizeDisplay(b: number): string {
+  const kb = b / 1024;
+  if (kb < 1) {
+    return b + "B";
+  }
+  const mb = kb / 1024;
+  if (mb < 1) {
+    return kb.toFixed(2) + "KB";
+  }
+  const gb = mb / 1024;
+  if (gb < 1) {
+    return mb.toFixed(2) + "MB";
+  }
+  return gb.toFixed(2) + "GB";
+}
+
+export function smartTimestampDisplay(timestamp: number): string {
+  const date = new Date(timestamp);
+  // const now = new Date();
+  // const diff = now.getTime() - date.getTime();
+  // if (diff < 1000) {
+  //   return "刚刚";
+  // }
+  // if (diff < 60 * 1000) {
+  //   return Math.floor(diff / 1000) + "秒前";
+  // }
+  // if (diff < 60 * 60 * 1000) {
+  //   return Math.floor(diff / 1000 / 60) + "分钟前";
+  // }
+  // if (diff < 24 * 60 * 60 * 1000) {
+  //   return Math.floor(diff / 1000 / 60 / 60) + "小时前";
+  // }
+  // if (diff < 7 * 24 * 60 * 60 * 1000) {
+  //   return Math.floor(diff / 1000 / 60 / 60 / 24) + "天前";
+  // }
+  return date.toLocaleString();
 }

@@ -10,6 +10,8 @@ import {
   Switch,
   Typography,
   Button,
+  Dropdown,
+  Descriptions,
 } from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
@@ -21,20 +23,28 @@ import {
 import styles from "./index.module.css";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { IconEyeClosedSolid, IconGithubLogo, IconHelpCircle } from "@douyinfe/semi-icons";
+import {
+  IconEyeClosedSolid,
+  IconGithubLogo,
+  IconHelpCircle,
+} from "@douyinfe/semi-icons";
 import {
   canvasToFile,
   fileToIOpenAttachment,
   fileToURL,
   base64ToFile,
   downloadFile,
+  urlToFile,
+  smartFileSizeDisplay,
+  smartTimestampDisplay,
 } from "../../utils/shared";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 import { arrayMoveImmutable } from "array-move";
 import SortableList, { SortableItem } from "react-easy-sort";
-import useModalInput from "../../components/useModalInput";
+import useModal from "../../components/useModal";
 import { createPortal } from "react-dom";
+import useMenu from "../../components/useMenu";
 
 const Editor = dynamic(() => import("../../components/Editor"), { ssr: false });
 
@@ -68,7 +78,8 @@ export default function Home() {
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
   const [nextWin, setNextWin] = useState<Window | undefined>(undefined);
   const [t, i18n] = useTranslation();
-  const { alert } = useModalInput();
+  const { alertInput, alert } = useModal();
+  const { popup, params } = useMenu();
   // const lock = useRef(false);
 
   useEffect(() => {
@@ -234,21 +245,6 @@ export default function Home() {
     });
   };
 
-  // useEffect(()=>{
-  //   if(!selected){
-  //     return;
-  //   }
-  //   if(lock.current){
-  //     lock.current = false;
-  //     return;
-  //   }
-  //   console.log('更新对象', selected)
-  //   selected.field.setValue(
-  //     selected.select.recordId,
-  //     selected.selectImages.map((item: any) => item.val)
-  //   );
-  // }, [selected?.selectImages])
-
   const saveTable = useCallback(function saveTable(selected: Selected) {
     return selected.field.setValue(
       selected.select.recordId,
@@ -256,16 +252,16 @@ export default function Home() {
     );
   }, []);
 
-  const onCaptureTitle = useCallback(
+  const clickRename = useCallback(
     async (index: number) => {
-      const res = await alert({
+      const res = await alertInput({
         title: t("modal-title"),
         content: t("modal-content"),
         emptyText: t("modal-empty-text"),
         defaultValue: selected?.selectImages[index].val.name,
       });
       console.log(res);
-      if (res.ok) {
+      if (res.ok && res.data) {
         const newSelectImages = ([] as any).concat(selected?.selectImages);
         newSelectImages[index].val.name = res.data;
         console.log(newSelectImages === selected?.selectImages);
@@ -274,8 +270,90 @@ export default function Home() {
         setSelected(newSelected);
       }
     },
-    [alert, selected?.selectImages]
+    [alertInput, selected?.selectImages]
   );
+
+  const menu = [
+    {
+      node: "item",
+      name: "打开",
+      type: "tertiary",
+      onClick() {
+        if (params.current) {
+          const index = (params.current as any).index;
+          const img = selected?.selectImages[index];
+          if (!img) {
+            return;
+          }
+          setTimeout(() => {
+            img.val.type.includes("image")
+              ? openImgEditor(index)
+              : Toast.warning({ content: t("no-support-file") });
+          }, 1);
+        }
+      },
+    },
+    { node: "divider" },
+    {
+      node: "item",
+      name: "重命名",
+      type: "tertiary",
+      onClick() {
+        if (params.current) {
+          clickRename((params.current as any).index);
+        }
+      },
+    },
+    { node: "item", name: "详情", type: "tertiary", onClick(){
+      alert({ title: "详情", content: <Descriptions data={[
+        {
+          key: "文件名",
+          value: selected?.selectImages[(params.current as any).index].val.name
+        },
+        {
+          key: "文件类型",
+          value: selected?.selectImages[(params.current as any).index].val.type
+        },
+        {
+          key: "文件大小",
+          value: smartFileSizeDisplay(selected?.selectImages[(params.current as any).index].val.size)
+        },
+        {
+          key: "上传时间",
+          value: smartTimestampDisplay(selected?.selectImages[(params.current as any).index].val.timeStamp)
+        },
+      ]} /> })
+    } },
+    { node: "item", name: "下载", type: "tertiary", onClick(){
+      if (params.current) {
+        const index = (params.current as any).index;
+        const img = selected?.selectImages[index];
+        if (!img) {
+          return;
+        }
+        setTimeout(async () => {
+          downloadFile(await urlToFile(img.url, img.val.name, img.val.type));
+        }, 1);
+      }
+    } },
+    { node: "divider" },
+    { node: "item", name: "删除", type: "danger", async onClick() {
+      if (params.current) {
+        const index = (params.current as any).index;
+        console.log(index, selected?.selectImages[index]);
+        const res = await alert({ title: "确定删除吗？", content: "这将要删除您的附件", okType: "danger" })
+        console.log(res);
+        if(res.ok){
+          const newSelectImages = ([] as any).concat(selected?.selectImages);
+          newSelectImages.splice(index, 1);
+          const newSelected: any = { ...selected, selectImages: newSelectImages };
+          saveTable(newSelected);
+          setSelected(newSelected);
+          Toast.success({content: "删除成功！"})
+        }
+      }
+    } },
+  ];
   return (
     <div>
       {loading ? (
@@ -323,6 +401,9 @@ export default function Home() {
                           ? openImgEditor(index)
                           : Toast.warning({ content: t("no-support-file") })
                       }
+                      onContextMenu={(e) => {
+                        popup(e as unknown as MouseEvent, menu, { index });
+                      }}
                     >
                       <img
                         className={styles["image"]}
@@ -339,10 +420,10 @@ export default function Home() {
                         className={styles["title"]}
                         size="small"
                         onClick={(e) => e.stopPropagation()}
-                        onDoubleClickCapture={() => onCaptureTitle(index)}
+                        onDoubleClickCapture={() => clickRename(index)}
                       >
                         {img.val.name}
-                      </Text>{" "}
+                      </Text>
                     </div>
                   }
                 </SortableItem>
@@ -399,12 +480,19 @@ export default function Home() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          marginTop: '5px',
-          color: "#666"
+          marginTop: "5px",
+          color: "#666",
         }}
       >
-        <IconHelpCircle size="large" onClick={()=>open('https://zhuanlan.zhihu.com/p/662689669')} />
-        <IconGithubLogo size="large" style={{marginLeft: '5px'}} onClick={()=>open('https://github.com/WumaCoder/bs-viewer')} />
+        <IconHelpCircle
+          size="large"
+          onClick={() => open("https://zhuanlan.zhihu.com/p/662689669")}
+        />
+        <IconGithubLogo
+          size="large"
+          style={{ marginLeft: "5px" }}
+          onClick={() => open("https://github.com/WumaCoder/bs-viewer")}
+        />
       </div>
     </div>
   );
