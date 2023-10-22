@@ -427,7 +427,7 @@ export default function Home() {
         val: await fileToIOpenAttachment(base, file),
         url: await fileToURL(file),
       };
-
+      if(!selected?.selectImages) return;
       const newSelectImages = selected.selectImages;
       newSelectImages.push(newSelectImage);
       const newSelected: any = {
@@ -481,7 +481,7 @@ export default function Home() {
             </div>
           </div>
           <Upload
-            style={{ margin: "5px", height: '70vh' }}
+            style={{ margin: "5px", height: selected?.selectImages.length > 0 ? 'auto' : '70vh' }}
             action="/upload"
             ref={uploadRef as any}
             draggable={true}
