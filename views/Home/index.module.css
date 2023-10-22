@@ -14,6 +14,7 @@
   border-radius: 5px;
   background-color: rgba(var(--semi-light-green-0), 1);
   padding: 2px 4px;
+  margin-left: 5px;
 }
 
 .block-image {
@@ -23,7 +24,6 @@
   display: grid;
   grid-template-columns: repeat(var(--nxn), auto);
   /* 定义列数 */
-  margin: 5px;
   margin-right: 0;
   /* cursor: grab; */
 }

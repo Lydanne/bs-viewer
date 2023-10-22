@@ -12,6 +12,7 @@ import {
   Button,
   Dropdown,
   Descriptions,
+  Upload,
 } from "@douyinfe/semi-ui";
 import {
   IllustrationNoContent,
@@ -45,6 +46,7 @@ import SortableList, { SortableItem } from "react-easy-sort";
 import useModal from "../../components/useModal";
 import { createPortal } from "react-dom";
 import useMenu from "../../components/useMenu";
+import { FieldType } from "@lark-base-open/js-sdk";
 
 const Editor = dynamic(() => import("../../components/Editor"), { ssr: false });
 
@@ -76,11 +78,12 @@ export default function Home() {
   const [current, setCurrent] = useState(-1);
   const [fullMode, setFullMode] = useState(storeFullMode);
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
+  const [isAttachment, setIsAttachment] = useState(false);
   const [nextWin, setNextWin] = useState<Window | undefined>(undefined);
   const [t, i18n] = useTranslation();
   const { alertInput, alert } = useModal();
   const { popup, params } = useMenu();
-  // const lock = useRef(false);
+  const uploadRef = useRef();
 
   useEffect(() => {
     localStorage.setItem("fullMode", fullMode ? "1" : "0");
@@ -97,9 +100,21 @@ export default function Home() {
       };
       const select = await base.getSelection();
       const field: any = await table.getField(select.fieldId);
+      if ((await field.getType()) !== FieldType.Attachment) {
+        setIsAttachment(false);
+        setLoading(false);
+        return setSelected(undefined);
+      }
+      setIsAttachment(true);
       // const cell = await field.getCell(select.recordId);
-      const urls = await field.getAttachmentUrls(select.recordId);
-      const vals = await field.getValue(select.recordId);
+      const urls =
+        (await field
+          .getAttachmentUrls(select.recordId)
+          .catch((err: any) => console.log(err), [])) || [];
+      const vals =
+        (await field
+          .getValue(select.recordId)
+          .catch((err: any) => console.log(err), [])) || [];
       selected.field = field;
       selected.select = select;
       vals.map((val: any, i: string | number) => {
@@ -111,6 +126,8 @@ export default function Home() {
       if (current > selected.selectImages.length - 1) {
         setCurrent(-1);
       }
+      console.log(selected);
+
       setSelected(selected);
     } catch (error) {
       setSelected(undefined);
@@ -304,56 +321,128 @@ export default function Home() {
         }
       },
     },
-    { node: "item", name: t("menu-info"), type: "tertiary", onClick(){
-      alert({ title: t("menu-info"), content: <Descriptions data={[
-        {
-          key: t("menu-info-filename"),
-          value: selected?.selectImages[(params.current as any).index].val.name
-        },
-        {
-          key: t("menu-info-filetype"),
-          value: selected?.selectImages[(params.current as any).index].val.type
-        },
-        {
-          key: t("menu-info-filesize"),
-          value: smartFileSizeDisplay(selected?.selectImages[(params.current as any).index].val.size)
-        },
-        {
-          key: t("menu-info-filetime"),
-          value: smartTimestampDisplay(selected?.selectImages[(params.current as any).index].val.timeStamp)
-        },
-      ]} /> })
-    } },
-    { node: "item", name: t('menu-download'), type: "tertiary", onClick(){
-      if (params.current) {
-        const index = (params.current as any).index;
-        const img = selected?.selectImages[index];
-        if (!img) {
-          return;
+    {
+      node: "item",
+      name: t("menu-info"),
+      type: "tertiary",
+      onClick() {
+        alert({
+          title: t("menu-info"),
+          content: (
+            <Descriptions
+              data={[
+                {
+                  key: t("menu-info-filename"),
+                  value:
+                    selected?.selectImages[(params.current as any).index].val
+                      .name,
+                },
+                {
+                  key: t("menu-info-filetype"),
+                  value:
+                    selected?.selectImages[(params.current as any).index].val
+                      .type,
+                },
+                {
+                  key: t("menu-info-filesize"),
+                  value: smartFileSizeDisplay(
+                    selected?.selectImages[(params.current as any).index].val
+                      .size
+                  ),
+                },
+                {
+                  key: t("menu-info-filetime"),
+                  value: smartTimestampDisplay(
+                    selected?.selectImages[(params.current as any).index].val
+                      .timeStamp
+                  ),
+                },
+              ]}
+            />
+          ),
+        });
+      },
+    },
+    {
+      node: "item",
+      name: t("menu-download"),
+      type: "tertiary",
+      onClick() {
+        if (params.current) {
+          const index = (params.current as any).index;
+          const img = selected?.selectImages[index];
+          if (!img) {
+            return;
+          }
+          setTimeout(async () => {
+            downloadFile(await urlToFile(img.url, img.val.name, img.val.type));
+          }, 1);
         }
-        setTimeout(async () => {
-          downloadFile(await urlToFile(img.url, img.val.name, img.val.type));
-        }, 1);
-      }
-    } },
+      },
+    },
     { node: "divider" },
-    { node: "item", name: t("menu-delete"), type: "danger", async onClick() {
-      if (params.current) {
-        const index = (params.current as any).index;
-        console.log(index, selected?.selectImages[index]);
-        const res = await alert({ title: t('delete-title'), content: t('delete-content'), okType: "danger" })
-        console.log(res);
-        if(res.ok){
-          const newSelectImages = ([] as any).concat(selected?.selectImages);
-          newSelectImages.splice(index, 1);
-          const newSelected: any = { ...selected, selectImages: newSelectImages };
-          saveTable(newSelected);
-          setSelected(newSelected);
-          Toast.success({content: t("delete-success")})
+    {
+      node: "item",
+      name: t("menu-delete"),
+      type: "danger",
+      async onClick() {
+        if (params.current) {
+          const index = (params.current as any).index;
+          console.log(index, selected?.selectImages[index]);
+          const res = await alert({
+            title: t("delete-title"),
+            content: t("delete-content"),
+            okType: "danger",
+          });
+          console.log(res);
+          if (res.ok) {
+            const newSelectImages = ([] as any).concat(selected?.selectImages);
+            newSelectImages.splice(index, 1);
+            const newSelected: any = {
+              ...selected,
+              selectImages: newSelectImages,
+            };
+            saveTable(newSelected);
+            setSelected(newSelected);
+            Toast.success({ content: t("delete-success") });
+          }
         }
-      }
-    } },
+      },
+    },
   ];
+  const customRequest = useCallback(
+    async (o: any) => {
+      console.log(o);
+      const file = o.fileInstance;
+      if (!file) {
+        return;
+      }
+      const tid = Toast.info({
+        showClose: false,
+        duration: 0,
+        icon: <Spin />,
+        content: "上传中...",
+      });
+      const newSelectImage = {
+        val: await fileToIOpenAttachment(base, file),
+        url: await fileToURL(file),
+      };
+
+      const newSelectImages = selected.selectImages;
+      newSelectImages.push(newSelectImage);
+      const newSelected: any = {
+        ...selected,
+        selectImages: newSelectImages,
+      };
+      saveTable(newSelected);
+      setSelected(newSelected);
+      Toast.close(tid);
+      Toast.success({ content: "上传成功: " + file.name });
+      o.onSuccess({ status: 201 });
+    },
+    [saveTable, selected]
+  );
+
   return (
     <div>
       {loading ? (
@@ -361,7 +450,7 @@ export default function Home() {
           size="large"
           style={{ margin: "50vh 50vw", transform: "translate(-50%, -50%)" }}
         />
-      ) : !selected ? (
+      ) : !selected || !isAttachment ? (
         <Empty
           image={<IllustrationNoContent style={{ width: 150, height: 150 }} />}
           darkModeImage={
@@ -373,6 +462,14 @@ export default function Home() {
       ) : current === -1 ? (
         <>
           <div className={styles["block-menu"]}>
+            <div>
+              <Button
+                size="small"
+                onClick={() => (uploadRef.current as any)?.openFileDialog()}
+              >
+                上传
+              </Button>
+            </div>
             <div className={styles["menu-item"]}>
               <Text>{t("full-mode")}</Text>
               <Switch
@@ -383,53 +480,80 @@ export default function Home() {
               />
             </div>
           </div>
-          <SortableList
-            onSortEnd={onSortEnd}
-            draggedItemClassName="dragged"
-            className={styles["block-image"]}
+          <Upload
+            style={{ margin: "5px", height: '70vh' }}
+            action="/upload"
+            ref={uploadRef as any}
+            draggable={true}
+            dragMainText={"点击上传文件或拖拽文件到这里"}
+            dragSubText="支持任意类型文件"
+            // uploadTrigger="custom"
+            addOnPasting
+            multiple
+            showUploadList={false}
+            customRequest={customRequest}
           >
-            {selected?.selectImages?.map((img, index) => {
-              return (
-                <SortableItem key={img.url}>
-                  {
-                    <div
-                      className={styles["image-item"]}
-                      style={{ background: "#eee" }}
-                      key={img.url}
-                      onClick={() =>
-                        img.val.type.includes("image")
-                          ? openImgEditor(index)
-                          : Toast.warning({ content: t("no-support-file") })
-                      }
-                      onContextMenu={(e) => {
-                        popup(e as unknown as MouseEvent, menu, { index });
-                      }}
-                    >
-                      <img
-                        className={styles["image"]}
-                        src={
-                          img.val.type.includes("image")
-                            ? img.url
-                            : "/no-image.svg"
+            {selected?.selectImages.length > 0 ? (
+              <div
+                style={{ width: "100%" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <SortableList
+                  onSortEnd={onSortEnd}
+                  draggedItemClassName="dragged"
+                  className={styles["block-image"]}
+                >
+                  {selected?.selectImages?.map((img, index) => {
+                    return (
+                      <SortableItem key={img.val.token}>
+                        {
+                          <div
+                            className={styles["image-item"]}
+                            style={{ background: "#eee" }}
+                            onClick={() =>
+                              img.val.type.includes("image")
+                                ? openImgEditor(index)
+                                : Toast.warning({
+                                    content: t("no-support-file"),
+                                  })
+                            }
+                            onContextMenu={(e) => {
+                              popup(e as unknown as MouseEvent, menu, {
+                                index,
+                              });
+                            }}
+                          >
+                            <img
+                              className={styles["image"]}
+                              src={
+                                img.val.type.includes("image")
+                                  ? img.url
+                                  : "/no-image.svg"
+                              }
+                              alt={img.val.name}
+                              style={{ width: "100%", height: "100%" }}
+                            />
+                            <Text
+                              ellipsis={true}
+                              className={styles["title"]}
+                              size="small"
+                              onClick={(e) => e.stopPropagation()}
+                              onDoubleClickCapture={() => clickRename(index)}
+                            >
+                              {img.val.name}
+                            </Text>
+                          </div>
                         }
-                        alt={img.val.name}
-                        style={{ width: "100%", height: "100%" }}
-                      />
-                      <Text
-                        ellipsis={true}
-                        className={styles["title"]}
-                        size="small"
-                        onClick={(e) => e.stopPropagation()}
-                        onDoubleClickCapture={() => clickRename(index)}
-                      >
-                        {img.val.name}
-                      </Text>
-                    </div>
-                  }
-                </SortableItem>
-              );
-            })}
-          </SortableList>
+                      </SortableItem>
+                    );
+                  })}
+                </SortableList>
+              </div>
+            ) : undefined}
+          </Upload>
           <div className={styles["image-tip"]}>{t("image-tip")}</div>
         </>
       ) : fullMode ? (
