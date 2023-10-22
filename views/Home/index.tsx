@@ -21,7 +21,7 @@ import {
 import styles from "./index.module.css";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { IconEyeClosedSolid } from "@douyinfe/semi-icons";
+import { IconEyeClosedSolid, IconGithubLogo, IconHelpCircle } from "@douyinfe/semi-icons";
 import {
   canvasToFile,
   fileToIOpenAttachment,
@@ -261,7 +261,7 @@ export default function Home() {
       const res = await alert({
         title: t("modal-title"),
         content: t("modal-content"),
-        emptyText: t('modal-empty-text'),
+        emptyText: t("modal-empty-text"),
         defaultValue: selected?.selectImages[index].val.name,
       });
       console.log(res);
@@ -394,6 +394,18 @@ export default function Home() {
           />
         </div>
       )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: '5px',
+          color: "#666"
+        }}
+      >
+        <IconHelpCircle size="large" onClick={()=>open('https://zhuanlan.zhihu.com/p/662689669')} />
+        <IconGithubLogo size="large" style={{marginLeft: '5px'}} onClick={()=>open('https://github.com/WumaCoder/bs-viewer')} />
+      </div>
     </div>
   );
 }
