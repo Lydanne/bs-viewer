@@ -106,5 +106,7 @@
   "editing": "正在新的标签页编辑中...",
   "full-mode": "全屏模式",
   "back-list": "返回列表",
-  "back-edit": "回到编辑"
+  "back-edit": "回到编辑",
+  "modal-title": "重命名",
+  "modal-content": "这将快速的修改文件的名字"
 }

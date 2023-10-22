@@ -33,6 +33,8 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 import { arrayMoveImmutable } from "array-move";
 import SortableList, { SortableItem } from "react-easy-sort";
+import useModalInput from "../../components/useModalInput";
+import { createPortal } from "react-dom";
 
 const Editor = dynamic(() => import("../../components/Editor"), { ssr: false });
 
@@ -66,6 +68,8 @@ export default function Home() {
   const [selected, setSelected] = useState<Selected | undefined>(undefined);
   const [nextWin, setNextWin] = useState<Window | undefined>(undefined);
   const [t, i18n] = useTranslation();
+  const { alert } = useModalInput();
+  // const lock = useRef(false);
 
   useEffect(() => {
     localStorage.setItem("fullMode", fullMode ? "1" : "0");
@@ -73,6 +77,7 @@ export default function Home() {
 
   const onSelectChange = useCallback(async () => {
     setLoading(true);
+    // lock.current = true;
     try {
       const selected: Selected = {
         field: null,
@@ -203,13 +208,10 @@ export default function Home() {
 
     // console.log(newSelectImages, index);
 
-    await selected.field.setValue(
-      selected.select.recordId,
-      newSelectImages.map((item: any) => item.val)
-    );
-    selected.selectImages = newSelectImages;
+    const newSelected = { ...selected, selectImages: newSelectImages };
+    saveTable(newSelected);
+    setSelected(newSelected);
     setCurrent(-1);
-    setSelected(selected);
     Toast.success({ content: t("save-success") });
   };
 
@@ -217,7 +219,7 @@ export default function Home() {
     // console.log("setSelected", oldIndex, newIndex);
     setSelected((selected) => {
       if (selected) {
-        const newSelect = {
+        const newSelected = {
           ...selected,
           selectImages: arrayMoveImmutable(
             selected.selectImages,
@@ -225,20 +227,54 @@ export default function Home() {
             newIndex
           ),
         };
-        newSelect.field.setValue(
-          selected.select.recordId,
-          newSelect.selectImages.map((item: any) => item.val)
-        );
-        return newSelect;
+        saveTable(newSelected);
+        return newSelected;
       }
       return selected;
     });
   };
 
-  const onCaptureTitle = useCallback((index: number)=>{
+  // useEffect(()=>{
+  //   if(!selected){
+  //     return;
+  //   }
+  //   if(lock.current){
+  //     lock.current = false;
+  //     return;
+  //   }
+  //   console.log('更新对象', selected)
+  //   selected.field.setValue(
+  //     selected.select.recordId,
+  //     selected.selectImages.map((item: any) => item.val)
+  //   );
+  // }, [selected?.selectImages])
 
-  },[])
+  const saveTable = useCallback(function saveTable(selected: Selected) {
+    return selected.field.setValue(
+      selected.select.recordId,
+      selected.selectImages.map((item: any) => item.val)
+    );
+  }, []);
 
+  const onCaptureTitle = useCallback(
+    async (index: number) => {
+      const res = await alert({
+        title: t("modal-title"),
+        content: t("modal-content"),
+        defaultValue: selected?.selectImages[index].val.name,
+      });
+      console.log(res);
+      if (res.ok) {
+        const newSelectImages = ([] as any).concat(selected?.selectImages);
+        newSelectImages[index].val.name = res.data;
+        console.log(newSelectImages === selected?.selectImages);
+        const newSelected: any = { ...selected, selectImages: newSelectImages };
+        saveTable(newSelected);
+        setSelected(newSelected);
+      }
+    },
+    [alert, selected?.selectImages]
+  );
   return (
     <div>
       {loading ? (
@@ -298,9 +334,7 @@ export default function Home() {
                         style={{ width: "100%", height: "100%" }}
                       />
                       <Text
-                        ellipsis={{
-                          showTooltip: true
-                        }}
+                        ellipsis={true}
                         className={styles["title"]}
                         size="small"
                         onClick={(e) => e.stopPropagation()}
@@ -361,9 +395,4 @@ export default function Home() {
       )}
     </div>
   );
-}
-
-function fileExt(file: string) {
-  const ext = file.split(".").pop();
-  return ext ? ext.toLowerCase() : "unknown";
 }

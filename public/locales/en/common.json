@@ -7,5 +7,7 @@
   "editing": "Editing new tab page...",
   "full-mode": "full screen mode",
   "back-list": "Back to list",
-  "back-edit": "Back to editing"
+  "back-edit": "Back to editing",
+  "modal-title": "Rename",
+  "modal-content": "This will quickly change the name of the file"
 }

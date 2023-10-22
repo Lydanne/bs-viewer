@@ -85,3 +85,11 @@ export function downloadFile(file: File) {
   downloadLink.download = file.name;
   downloadLink.click();
 }
+
+export function fileExt(file: string) {
+  const [name, ext] = file.split(".");
+  return [
+    name,
+    ext ? "." + ext.toLowerCase() : undefined
+  ]
+}
