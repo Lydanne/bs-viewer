@@ -22,5 +22,9 @@
   "menu-delete": "delete",
   "delete-success": "successfully deleted!",
   "delete-title": "confirm to delete?",
-  "delete-content": "This will delete your attachment"
+  "delete-content": "This will delete your attachment",
+  "upload-drag-text": "Click to upload files or drag and drop files here",
+  "upload-drag-sub": "Support any type of file",
+  "loading": "uploading...",
+  "upload-success": "Upload successful:"
 }

@@ -121,5 +121,9 @@
   "menu-delete": "删除",
   "delete-success": "删除成功！",
   "delete-title": "确定删除吗？",
-  "delete-content": "这将要删除您的附件"
+  "delete-content": "这将要删除您的附件",
+  "upload-drag-text": "点击上传文件或拖拽文件到这里",
+  "upload-drag-sub": "支持任意类型文件",
+  "loading": "上传中...",
+  "upload-success": "上传成功: "
 }

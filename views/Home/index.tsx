@@ -421,7 +421,7 @@ export default function Home() {
         showClose: false,
         duration: 0,
         icon: <Spin />,
-        content: "上传中...",
+        content: t('loading'),
       });
       const newSelectImage = {
         val: await fileToIOpenAttachment(base, file),
@@ -437,7 +437,7 @@ export default function Home() {
       saveTable(newSelected);
       setSelected(newSelected);
       Toast.close(tid);
-      Toast.success({ content: "上传成功: " + file.name });
+      Toast.success({ content: t("upload-success") + file.name });
       o.onSuccess({ status: 201 });
     },
     [saveTable, selected]
@@ -485,8 +485,8 @@ export default function Home() {
             action="/upload"
             ref={uploadRef as any}
             draggable={true}
-            dragMainText={"点击上传文件或拖拽文件到这里"}
-            dragSubText="支持任意类型文件"
+            dragMainText={t("upload-drag-text")}
+            dragSubText={t('upload-drag-sub')}
             // uploadTrigger="custom"
             addOnPasting
             multiple
