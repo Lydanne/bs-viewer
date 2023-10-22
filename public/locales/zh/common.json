@@ -109,5 +109,17 @@
   "back-edit": "回到编辑",
   "modal-title": "重命名",
   "modal-content": "这将快速的修改文件的名字",
-  "modal-empty-text": "不能为空"
+  "modal-empty-text": "不能为空",
+  "menu-open": "打开",
+  "menu-rename": "重命名",
+  "menu-info": "详情",
+  "menu-info-filename": "文件名",
+  "menu-info-filetype": "文件类型",
+  "menu-info-filesize": "文件大小",
+  "menu-info-filetime": "上传时间",
+  "menu-download": "下载",
+  "menu-delete": "删除",
+  "delete-success": "删除成功！",
+  "delete-title": "确定删除吗？",
+  "delete-content": "这将要删除您的附件"
 }

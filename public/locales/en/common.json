@@ -10,5 +10,17 @@
   "back-edit": "Back to editing",
   "modal-title": "Rename",
   "modal-content": "This will quickly change the name of the file",
-  "modal-empty-text": "Can not be empty"
+  "modal-empty-text": "Can not be empty",
+  "menu-open": "Open",
+  "menu-rename": "Rename",
+  "menu-info": "Details",
+  "menu-info-filename": "file name",
+  "menu-info-filetype": "file type",
+  "menu-info-filesize": "File size",
+  "menu-info-filetime": "Upload time",
+  "menu-download": "download",
+  "menu-delete": "delete",
+  "delete-success": "successfully deleted!",
+  "delete-title": "confirm to delete?",
+  "delete-content": "This will delete your attachment"
 }

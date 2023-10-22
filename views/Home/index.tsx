@@ -276,7 +276,7 @@ export default function Home() {
   const menu = [
     {
       node: "item",
-      name: "打开",
+      name: t("menu-open"),
       type: "tertiary",
       onClick() {
         if (params.current) {
@@ -296,7 +296,7 @@ export default function Home() {
     { node: "divider" },
     {
       node: "item",
-      name: "重命名",
+      name: t("menu-rename"),
       type: "tertiary",
       onClick() {
         if (params.current) {
@@ -304,27 +304,27 @@ export default function Home() {
         }
       },
     },
-    { node: "item", name: "详情", type: "tertiary", onClick(){
-      alert({ title: "详情", content: <Descriptions data={[
+    { node: "item", name: t("menu-info"), type: "tertiary", onClick(){
+      alert({ title: t("menu-info"), content: <Descriptions data={[
         {
-          key: "文件名",
+          key: t("menu-info-filename"),
           value: selected?.selectImages[(params.current as any).index].val.name
         },
         {
-          key: "文件类型",
+          key: t("menu-info-filetype"),
           value: selected?.selectImages[(params.current as any).index].val.type
         },
         {
-          key: "文件大小",
+          key: t("menu-info-filesize"),
           value: smartFileSizeDisplay(selected?.selectImages[(params.current as any).index].val.size)
         },
         {
-          key: "上传时间",
+          key: t("menu-info-filetime"),
           value: smartTimestampDisplay(selected?.selectImages[(params.current as any).index].val.timeStamp)
         },
       ]} /> })
     } },
-    { node: "item", name: "下载", type: "tertiary", onClick(){
+    { node: "item", name: t('menu-download'), type: "tertiary", onClick(){
       if (params.current) {
         const index = (params.current as any).index;
         const img = selected?.selectImages[index];
@@ -337,11 +337,11 @@ export default function Home() {
       }
     } },
     { node: "divider" },
-    { node: "item", name: "删除", type: "danger", async onClick() {
+    { node: "item", name: t("menu-delete"), type: "danger", async onClick() {
       if (params.current) {
         const index = (params.current as any).index;
         console.log(index, selected?.selectImages[index]);
-        const res = await alert({ title: "确定删除吗？", content: "这将要删除您的附件", okType: "danger" })
+        const res = await alert({ title: t('delete-title'), content: t('delete-content'), okType: "danger" })
         console.log(res);
         if(res.ok){
           const newSelectImages = ([] as any).concat(selected?.selectImages);
@@ -349,7 +349,7 @@ export default function Home() {
           const newSelected: any = { ...selected, selectImages: newSelectImages };
           saveTable(newSelected);
           setSelected(newSelected);
-          Toast.success({content: "删除成功！"})
+          Toast.success({content: t("delete-success")})
         }
       }
     } },
