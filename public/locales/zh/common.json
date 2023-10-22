@@ -108,5 +108,6 @@
   "back-list": "返回列表",
   "back-edit": "回到编辑",
   "modal-title": "重命名",
-  "modal-content": "这将快速的修改文件的名字"
+  "modal-content": "这将快速的修改文件的名字",
+  "modal-empty-text": "不能为空"
 }

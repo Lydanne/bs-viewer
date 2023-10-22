@@ -261,6 +261,7 @@ export default function Home() {
       const res = await alert({
         title: t("modal-title"),
         content: t("modal-content"),
+        emptyText: t('modal-empty-text'),
         defaultValue: selected?.selectImages[index].val.name,
       });
       console.log(res);

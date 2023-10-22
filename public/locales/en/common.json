@@ -9,5 +9,6 @@
   "back-list": "Back to list",
   "back-edit": "Back to editing",
   "modal-title": "Rename",
-  "modal-content": "This will quickly change the name of the file"
+  "modal-content": "This will quickly change the name of the file",
+  "modal-empty-text": "Can not be empty"
 }
