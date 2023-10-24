@@ -18,8 +18,8 @@ dependencies:
     specifier: ^2.44.0
     version: registry.npmjs.org/@douyinfe/semi-ui@2.44.0(react-dom@18.2.0)(react@18.2.0)
   '@lark-base-open/js-sdk':
-    specifier: 0.3.0-alpha
-    version: registry.npmjs.org/@lark-base-open/js-sdk@0.3.0-alpha
+    specifier: ^0.3.4
+    version: registry.npmjs.org/@lark-base-open/js-sdk@0.3.4
   array-move:
     specifier: ^4.0.0
     version: registry.npmjs.org/array-move@4.0.0
@@ -1090,10 +1090,10 @@ packages:
       '@jridgewell/sourcemap-codec': registry.npmjs.org/@jridgewell/sourcemap-codec@1.4.15
     dev: true
 
-  registry.npmjs.org/@lark-base-open/js-sdk@0.3.0-alpha:
-    resolution: {integrity: sha512-+hya4QcYdkGKWT/mbMx5n2fBiJB/M+vMsY/n3xJG0knntHv1fRI4TDZSWTiZKpITWH29BAJ8XAe8aIy2Tu8s6Q==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/@lark-base-open/js-sdk/-/js-sdk-0.3.0-alpha.tgz}
+  registry.npmjs.org/@lark-base-open/js-sdk@0.3.4:
+    resolution: {integrity: sha512-akJA3mPbBRqcmWLb4wJZSmnM9F8GjXJolWrfn6YRLVfXOd2udyvw9q+Fj5kZaYv0W1tNvseDojZ6I3EhsAOboQ==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/@lark-base-open/js-sdk/-/js-sdk-0.3.4.tgz}
     name: '@lark-base-open/js-sdk'
-    version: 0.3.0-alpha
+    version: 0.3.4
     dev: false
 
   registry.npmjs.org/@next/env@13.5.3:
