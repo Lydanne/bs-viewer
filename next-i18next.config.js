@@ -5,6 +5,6 @@ module.exports = {
     locales: ["en", "zh"],
   },
   fallbackLng: {
-    default: ['zh'],
+    default: ['zh', 'en'],
   },
 };
