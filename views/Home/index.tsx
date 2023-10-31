@@ -150,10 +150,11 @@ export default function Home() {
     bridge = (bitable as any).bridge;
     base.onSelectionChange(() => onSelectionChangeRef.current());
     lang = await bridge.getLanguage();
-    // i18n.changeLanguage(lang);
+    i18n.changeLanguage(lang.includes("zh") ? "zh" : "en");
+    console.log("check lang:", i18n, lang);
     await onSelectionChangeRef.current();
     setLoading(false);
-  }, []);
+  }, [i18n]);
   useEffect(() => {
     init();
   });
@@ -421,13 +422,13 @@ export default function Home() {
         showClose: false,
         duration: 0,
         icon: <Spin />,
-        content: t('loading'),
+        content: t("loading"),
       });
       const newSelectImage = {
         val: await fileToIOpenAttachment(base, file),
         url: await fileToURL(file),
       };
-      if(!selected?.selectImages) return;
+      if (!selected?.selectImages) return;
       const newSelectImages = selected.selectImages;
       newSelectImages.push(newSelectImage);
       const newSelected: any = {
@@ -481,12 +482,15 @@ export default function Home() {
             </div>
           </div>
           <Upload
-            style={{ margin: "5px", height: selected?.selectImages.length > 0 ? 'auto' : '70vh' }}
+            style={{
+              margin: "5px",
+              height: selected?.selectImages.length > 0 ? "auto" : "70vh",
+            }}
             action="/upload"
             ref={uploadRef as any}
             draggable={true}
             dragMainText={t("upload-drag-text")}
-            dragSubText={t('upload-drag-sub')}
+            dragSubText={t("upload-drag-sub")}
             // uploadTrigger="custom"
             addOnPasting
             multiple
