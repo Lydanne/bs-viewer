@@ -459,7 +459,27 @@ export default function Home() {
           }
           description={t("empty")}
           style={{ marginTop: "20vh" }}
-        />
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: "5px",
+              color: "#666",
+            }}
+          >
+            <IconHelpCircle
+              size="large"
+              onClick={() => open("https://zhuanlan.zhihu.com/p/662689669")}
+            />
+            <IconGithubLogo
+              size="large"
+              style={{ marginLeft: "5px" }}
+              onClick={() => open("https://github.com/WumaCoder/bs-viewer")}
+            />
+          </div>
+        </Empty>
       ) : current === -1 ? (
         <>
           <div className={styles["block-menu"]}>
@@ -478,6 +498,25 @@ export default function Home() {
                 checked={fullMode}
                 onChange={setFullMode}
                 aria-label="open full model"
+              />
+            </div>
+            <div style={{flex: 1}}></div>
+            <div
+              className={styles["menu-item"]}
+              style={{
+                color: "#333",
+                background: "#eee",
+                marginRight: '10px'
+              }}
+            >
+              <IconHelpCircle
+                size="large"
+                onClick={() => open("https://zhuanlan.zhihu.com/p/662689669")}
+              />
+              <IconGithubLogo
+                size="large"
+                style={{ marginLeft: "5px" }}
+                onClick={() => open("https://github.com/WumaCoder/bs-viewer")}
               />
             </div>
           </div>
@@ -603,25 +642,6 @@ export default function Home() {
           />
         </div>
       )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "5px",
-          color: "#666",
-        }}
-      >
-        <IconHelpCircle
-          size="large"
-          onClick={() => open("https://zhuanlan.zhihu.com/p/662689669")}
-        />
-        <IconGithubLogo
-          size="large"
-          style={{ marginLeft: "5px" }}
-          onClick={() => open("https://github.com/WumaCoder/bs-viewer")}
-        />
-      </div>
     </div>
   );
 }
