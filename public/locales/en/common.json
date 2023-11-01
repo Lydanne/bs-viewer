@@ -26,5 +26,6 @@
   "upload-drag-text": "Click to upload files or drag and drop files here",
   "upload-drag-sub": "Support any type of file",
   "loading": "uploading...",
-  "upload-success": "Upload successful:"
+  "upload-success": "Upload successful:",
+  "upload": "Upload"
 }

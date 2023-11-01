@@ -468,7 +468,7 @@ export default function Home() {
                 size="small"
                 onClick={() => (uploadRef.current as any)?.openFileDialog()}
               >
-                上传
+                {t("upload")}
               </Button>
             </div>
             <div className={styles["menu-item"]}>

@@ -125,5 +125,6 @@
   "upload-drag-text": "点击上传文件或拖拽文件到这里",
   "upload-drag-sub": "支持任意类型文件",
   "loading": "上传中...",
-  "upload-success": "上传成功: "
+  "upload-success": "上传成功: ",
+  "upload": "上传"
 }
