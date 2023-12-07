@@ -170,7 +170,7 @@ export default function Home() {
       if (!window) {
         return setCurrent(index);
       }
-      const nextWin = window.open(`/editor`, "_blank", "fullscreen=yes") as any;
+      const nextWin = window.open(`./editor.html`, "_blank", "fullscreen=yes") as any;
       if (!nextWin) {
         return;
       }
