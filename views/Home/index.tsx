@@ -170,7 +170,11 @@ export default function Home() {
       if (!window) {
         return setCurrent(index);
       }
-      const nextWin = window.open(`./editor.html`, "_blank", "fullscreen=yes") as any;
+      const nextWin = window.open(
+        `./editor.html`,
+        "_blank",
+        "fullscreen=yes"
+      ) as any;
       if (!nextWin) {
         return;
       }
@@ -500,13 +504,13 @@ export default function Home() {
                 aria-label="open full model"
               />
             </div>
-            <div style={{flex: 1}}></div>
+            <div style={{ flex: 1 }}></div>
             <div
               className={styles["menu-item"]}
               style={{
                 color: "#333",
                 background: "#eee",
-                marginRight: '10px'
+                marginRight: "10px",
               }}
             >
               <IconHelpCircle
@@ -574,7 +578,7 @@ export default function Home() {
                               src={
                                 img.val.type.includes("image")
                                   ? img.url
-                                  : "/no-image.svg"
+                                  : "./no-image.svg"
                               }
                               alt={img.val.name}
                               style={{ width: "100%", height: "100%" }}
